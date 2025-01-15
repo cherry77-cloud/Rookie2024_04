@@ -1,0 +1,46 @@
+1. pipe函数
+◼ pipe函数可用于创建一个管道，以实现进程间通信。pipe函数的定义如下:
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+int pipe(int fd[2]);
+int socketpair(int domain, int type, int protocol, int fd[2]);
+    ● pipe函数的参数是一个包含两个int型整数的数组指针。该函数成功时返回0，并将一对打开的文件描述符值填入其参数指向的数组。如果失败，
+      则返回-1并设置errno;
+    ● 通过pipe函数创建的这两个文件描述符fd[0]和fd[1]分别构成管道的两端，往fd[1]写入的数据可以从fd[0]读出。并且，fd[0]只能用于从管道
+      读出数据，fd[1]则只能用于往管道写入数据，而不能反过来使用。如果要实现双向的数据传输，就应该使用两个管道。默认情况下，这一对文件
+      描述符都是阻塞的.
+    ● socketpair函数，它能够方便地创建双向管道.
+
+
+2. dup函数和dup2函数
+◼ 把标准输入重定向到一个文件，或者把标准输出重定向到一个网络连接，可以使用复制文件描述符的
+dup或dup2函数来实现:
+#include <unistd.h>
+int dup(int file_descriptor);
+int dup2(int file_descriptor_one, int file_descriptor_two);
+    ● dup函数创建一个新的文件描述符，该新文件描述符和原有文件描述符file_descriptor指向相同的文件，管道或者网络连接。并且dup返回的文件
+      描述符总是取系统当前可用的最小整数值.
+    ● 通过dup和dup2创建的文件描述符并不继承源文件描述符的属性，比如close-on-exec和non-blocking等.
+
+
+3. readv函数和writev函数
+◼ readv函数将数据从文件描述符读到分散的内存块中，即分散读; writev函数则将多块分散的内存数据一并写入文件描述符中，即集中写.
+#include <sys/uio.h>
+ssize_t readv(int fd, const struct iovec* vector, int count);
+ssize_t writev(int fg, const struct iovec* vector, int count);
+
+
+4. sendfile函数
+◼ sendfile函数在两个文件描述符之间直接传递数据(完全在内核中操作)，从而避免了内核缓冲区
+和用户缓冲区之间的数据拷贝，效率很高，这被称为零拷贝。sendfile函数的定义如下:
+#include <sys/sendfile.h>
+ssize_t sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
+
+
+5. mmap函数和munmap函数
+◼ mmap函数用于申请一段内存空间。我们可以将这段内存作为进程间通信的共享内存，也可以将文件直接映射到其中。munmap函数则释放由mmap创建的
+这段内存空间。它们的定义如下:
+#include <sys/mman.h>
+void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
+int munmap(void *start, size_t length);

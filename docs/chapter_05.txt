@@ -197,3 +197,51 @@ int setsockopt(int sockfd, int level, int option_name, const void *option_value,
 SO_DONTROUTE, SO_KEEPALIVE, SO_LINGER, SO_OOBINLINE, SO_RCVBUF, SO_RCVLOWAT, SO_SNDBUF, SO_SNDLOWAT, TCP_MAXSEG
 和TCP_NODELAY。而对客户端而言，这些socket选项则应该在调用connect函数之前设置，因为connect调用成功返回之后，
 TCP三次握手已完成.
+
+
+7. 网络信息API
+◼ gethostbyname函数根据主机名称获取主机的完整信息，gethostbyaddr函数根据IP地址获取主机的完整信息:
+#include <netdb.h>
+struct hostent* gethostbyname(const char* name);
+struct hostent* gethostbyaddr(const void* addr, size_t len, int type);
+struct hostent
+{
+    char* h_name;
+    char** h_aliases;
+    int h_addrtype;
+    int h_length;
+    char** h_addr_list;
+};
+
+◼ getservbyname函数根据名称获取某个服务的完整信息，getservbyport函数根据端口号获取某个服务的完整信息:
+#include <netdb.h>
+struct servent* getservbyname(const char* name, const char* proto);
+struct servent* getservbyport(int port, const char* proto);
+struct servent
+{
+    char* s_name;
+    char** s_aliases;
+    int s_port;
+    char* s_proto;
+};
+
+◼ getaddrinfo函数既能通过主机名获得IP地址，也能通过服务名获得端口号.
+#include <netdb.h>
+int getaddrinfo(const char* hostname, const char* service, const struct addrinfo* hints, struct addrinfo** result);
+void freeaddrinfo(struct addrinfo* res);
+struct addrinfo
+{
+    int ai_flags;
+    int ai_family;
+    int ai_socktype;
+    int ai_protocol;
+    socklen_t ai_addrlen;
+    char* ai_canonname;
+    struct sockaddr* ai_addr;
+    struct addrinfo* ai_next;
+};
+
+◼ getnameinfo函数能通过socket地址同时获得以字符串表示的主机名和服务名.
+#include <netdb.h>
+int getnameinfo(const struct sockaddr* sockaddr, socklen_t addrlen, char* host, socklen_t hostlen, 
+                char* serv, socklen_t servlen, int flags);

@@ -106,7 +106,8 @@ int bind(int sockfd, const struct socketaddr * my_addr, socklen_t addrlen);
 ◼ socket被命名之后，还不能马上接受客户连接，我们需要使用listen系统调用来创建一个监听队列以存放待处理的客户连接:
 #include <sys/socket.h>
 int listen(int sockfd, int backlog);
-    ● sockfd参数指定被监听的socket。backlog参数提示内核监听队列的最大长度。监听队列的长度如果超过backlog，服务器将不受理新的客户连接，客户端也将收到ECONNREFUSED错误信息。backlog参数的典型是5.
+    ● sockfd参数指定被监听的socket。backlog参数提示内核监听队列的最大长度。监听队列的长度如果超过backlog，服务器将不受理新的客户连接，
+      客户端也将收到ECONNREFUSED错误信息。backlog参数的典型是5.
     ● listen成功时返回0，失败则返回-1并设置errno.
 
 ◼ 下面的系统调用从listen监听队列中接受一个连接:

@@ -173,3 +173,17 @@ struct iovec
     void *iov_base;
     size_t iov_len;
 };
+
+
+6. socket选项
+◼ 内核通知应用程序带外数据到达的两种常见方式是: I/O复用产生的异常事件和SIGURG信号
+#include <sys/socket.h>
+int sockatmark(int sockfd);
+    ● sockatmark判断sockfd是否处于带外标记，即下一个被读取到的数据是否是带外数据.
+
+◼ 获取一个连接socket的本端socket地址，以及远端的socket地址
+#include <sys/socket.h>
+int getsockname(int socket, struct sockaddr* address, socklen_t *address_len);
+int getpeername(int socket, struct sockaddr* address, socklen_t *address_len);
+    ● getsockname获取sockfd对应的本端socket地址，并将其存储于address参数指定的内存中.
+    ● getpeername获取sockfd对应的远端socket地址.

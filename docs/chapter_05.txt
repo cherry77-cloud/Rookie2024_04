@@ -187,3 +187,8 @@ int getsockname(int socket, struct sockaddr* address, socklen_t *address_len);
 int getpeername(int socket, struct sockaddr* address, socklen_t *address_len);
     ● getsockname获取sockfd对应的本端socket地址，并将其存储于address参数指定的内存中.
     ● getpeername获取sockfd对应的远端socket地址.
+
+◼ fcntl系统调用是控制文件描述符属性的通用POSIX方法，下面两个系统调用则是专门用来读取和设置socket文件描述符属性的方法:
+#include <sys/socket.h>
+int getsockopt(int sockfd, int level, int option_name, void *option_value, socklen_t *restrict option_len);
+int setsockopt(int sockfd, int level, int option_name, const void *option_value, socklen_t option_len);

@@ -197,6 +197,10 @@ int setsockopt(int sockfd, int level, int option_name, const void *option_value,
 SO_DONTROUTE, SO_KEEPALIVE, SO_LINGER, SO_OOBINLINE, SO_RCVBUF, SO_RCVLOWAT, SO_SNDBUF, SO_SNDLOWAT, TCP_MAXSEG
 和TCP_NODELAY。而对客户端而言，这些socket选项则应该在调用connect函数之前设置，因为connect调用成功返回之后，
 TCP三次握手已完成.
+    ● SO_REUSEADDR: 强制使用被处于TIME_WAIT状态的连接占用的socket地址;
+    ● SO_RCVBUF和SO_SNDBUF: 分别表示TCP接收缓冲区和发送缓冲区的大小;
+    ● SO_RCVLOWAT和SO_SNDLOWAT: 分别表示TCP接收缓冲区和发送缓冲区的低水位标记;
+    ● SO_LINGER: 用于控制close系统调用在关闭TCP连接时的行为.
 
 
 7. 网络信息API

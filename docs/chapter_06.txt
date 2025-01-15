@@ -44,3 +44,29 @@ ssize_t sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
 #include <sys/mman.h>
 void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
 int munmap(void *start, size_t length);
+
+
+6. splice函数
+◼ splice函数用于在两个文件描述符之间移动数据，也是零拷贝操作。splice函数的定义如下:
+#include <fcntl.h>
+ssize_t splice(int fd_in, loff_t* off_in, int fd_out, loff_t* off_out, size_t len, unsigned int flags);
+
+
+7. tee函数
+◼ tee函数在两个管道文件描述符之间复制数据，也是零拷贝操作。它不消耗数据，因此源文件描述符上的数据仍然可以用于后续的读操作。tee函数的原型如下:
+#include <fcntl.h>
+ssize_t tee(int fd_in, int fd_out, size_t len, unsigned int flags);
+
+
+8. fcntl函数
+◼ 对于控制文件描述符常用的属性和行为，fcntl函数是由POSIX规范指定的首选方法.
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+在网络编程中，fcntl函数通常用来将一个文件描述符设置为非阻塞的.
+int setnonblocking(int fd)
+{
+    int old_option = fcntl(fd, F_GETFL);
+    int new_option = old_option | O_NONBLOCK;
+    fcntl(fd, F_SETFL, new_option);
+    return old_option;
+}

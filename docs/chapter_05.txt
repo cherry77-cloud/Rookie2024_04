@@ -138,3 +138,38 @@ int shutdown(int sockfd, int howto);
       才真正关闭连接.
     ● 如果无论如何都要立即终止连接。可以使用如下的shutdown系统调用.
     ● shutdown能够分别关闭socket上的读或写，或者都关闭。而close在关闭连接时只能将socket上的读和写同时关闭.
+
+
+5. 数据读写
+◼ TCP数据读写，用于TCP流数据读写的系统调用:
+#include <sys/types.h>
+#include <sys/socket.h>
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+
+◼ UDP数据读写，socket编程接口中用于UDP数据报读写的系统调用是:
+#include <sys/types.h>
+#include <sys/socket.h>
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen);
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
+
+◼ 通用数据读写函数，socket网络编程接口提供了一对通用的数据读写系统调用。它们不仅能用于TCP流数据，也能用于UDP数据报:
+#include <sys/socket.h>
+ssize_t recvmsg(int sockfd, struct msghdr* msg, int flags);
+ssize_t sendmsg(int sockfd, struct msghdr* msg, int flags);
+
+struct msghdr
+{
+    void *msg_name;
+    socklen_t msg_namelen;
+    struct iovec* msg_iov;
+    int msg_control;
+    socklen_t msg_controllen;
+    int msg_flags;
+};
+
+struct iovec
+{
+    void *iov_base;
+    size_t iov_len;
+};

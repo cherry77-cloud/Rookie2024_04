@@ -64,3 +64,23 @@ struct in6_addr
 
 ◼ 所有专用socket地址(以及sockaddr_storage)类型的变量在实际使用时都需要转化为通用socket地址类型sockaddr(强制转换)，因为所有socket编程
 接口使用的地址参数的类型都是sockaddr.
+
+
+3. IP地址转换函数
+◼ 下面3个函数可用于用点分十进制字符串表示的IPv4地址和用网络字节序整数表示的IPv4地址之间的转换:
+#include <arpa/inet.h>
+in_addr_t inet_addr(const char * strptr);
+int inet_aton(const char * cp, struct in_addr * inp);
+char * inet_ntoa(struct in_addr in);
+    ● inet_addr 函数将用点分十进制字符串表示的IPv4地址转化为用网络字节序整数表示的IPv4地址。失败时返回INADDR_NONE.
+    ● inet_aton 函数完成和inet_addr同样的功能，但是将转化结果存储于参数inp指向的地址结构中。它成功时返回1，失败则返回0.
+    ● inet_ntoa 函数将用网络字节序整数表示的IPv4地址转化为用点分十进制字符串表示的IPv4地址，该函数内部用一个静态变量存储
+          转化结果，函数的返回值指向该静态内存，因此inet_ntoa函数是不可重入的.
+
+◼ 下面这对更新的函数也能完成和前面3个函数同样的功能，并且它们同时适用于IPv4地址和IPv6地址:
+#include <arpa/inet.h>
+int inet_pton(int af, const char * src, void * dst);
+const char * inet_ntop(int af, const void * src, char * dst, socklen_t cnt);
+    ● inet_pton函数将用字符串表示的IP地址src(用点分十进制字符串表示的IPv4地址或用十六进制字符串表示的IPv6地址)转换成用网络
+      字节序整数表示的IP地址，并把转换结果存储于dst指向的内存中.
+    ● inet_ntop函数进行相反的转换，inet_ntop成功时返回目标存储单元的地址，失败则返回NULL并设置errno.

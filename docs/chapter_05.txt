@@ -118,3 +118,23 @@ int accept(int sockfd, struct sockaddr * addr, socklen_t *addrlen);
       accept成功时返回一个新的连接socket，该socket唯一地标识了被接受的这个连接，服务器可通过读写该socket来与被接受连接对应的客户端通信。 
       accept失败时返回-1并设置errno.
     ● 我们把执行过listen系统调用，处于LISTEN状态的socket称为监听socket，而所有处于ESTABLISHED状态的socket则称为连接socket.
+
+◼ 如果说服务器通过listen系统调用来被动接受连接，那么客户端需要通过connect系统调用来主动与服务器建立连接:
+#include <sys/types.h>
+#include <sys/socket.h>
+int connect(int sockfd, const struct sockaddr * serv_addr, socklen_t addrlen);
+    ● sockfd参数由socket系统调用返回一个socket。serv_addr参数是服务器监听的socket地址，addrlen参数则指定这个地址的长度.
+    ● connect成功时返回0。一旦成功建立连接，sockfd就唯一地标识了这个连接，客户端就可以通过读写sockfd来与服务器通信。connect失败则
+      返回-1并设置errno。其中两种常见的errno是ECONNREFUSED和ETIMEDOUT.
+    ● ECONNREFUSED，目标端口不存在;
+    ● ETIMEDOUT，连接超时;
+
+◼ 关闭一个连接实际上就是关闭该连接对应的socket，这可以通过如下关闭普通文件描述符的系统调用来完成:
+#include <unistd.h>
+#include <sys/socket.h>
+int close(int fd);
+int shutdown(int sockfd, int howto);
+    ● fd参数是待关闭的socket。不过，close系统调用并非总是立即关闭一个连接，而是将fd的引用计数减1。只有当fd的引用计数为0时，
+      才真正关闭连接.
+    ● 如果无论如何都要立即终止连接。可以使用如下的shutdown系统调用.
+    ● shutdown能够分别关闭socket上的读或写，或者都关闭。而close在关闭连接时只能将socket上的读和写同时关闭.

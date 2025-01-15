@@ -192,3 +192,8 @@ int getpeername(int socket, struct sockaddr* address, socklen_t *address_len);
 #include <sys/socket.h>
 int getsockopt(int sockfd, int level, int option_name, void *option_value, socklen_t *restrict option_len);
 int setsockopt(int sockfd, int level, int option_name, const void *option_value, socklen_t option_len);
+
+◼ 对监听socket设置这些socket选项，那么accept返回的连接socket将自动继承这些选项。这些socket选项包括: SO_DEBUG, 
+SO_DONTROUTE, SO_KEEPALIVE, SO_LINGER, SO_OOBINLINE, SO_RCVBUF, SO_RCVLOWAT, SO_SNDBUF, SO_SNDLOWAT, TCP_MAXSEG
+和TCP_NODELAY。而对客户端而言，这些socket选项则应该在调用connect函数之前设置，因为connect调用成功返回之后，
+TCP三次握手已完成.

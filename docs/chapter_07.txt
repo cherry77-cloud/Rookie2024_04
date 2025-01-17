@@ -29,3 +29,52 @@ void syslog(int priority, const char* message, ...);
 #define LOG_NOTICE   5   /* 通知 */
 #define LOG_INFO     6   /* 信息 */
 #define LOG_DEBUG    7   /* 调试 */
+
+
+3. 用户信息
+◼ 下面这一组函数可以获取和设置当前进程的真实用户ID(UID)，有效用户ID(EUID)，真实组ID(GID)
+和有效组ID(EGID).
+#include <sys/types.h>
+#include <unistd.h>
+uid_t getuid();
+uid_t geteuid();
+gid_t getgid();
+gid_t getegid();
+int setuid(uid_t uid);
+int seteuid(uid_t uid);
+int setgid(gid_t gid);
+int setegid(git_t gid);
+◼ 一个进程拥有两个用户ID: UID和EUID。EUID存在的目的是方便资源访问: 它使得运行程序的用户拥有
+该程序的有效用户的权限。有效用户为root的进程称为特权进程.
+
+
+4. 进程间关系
+◼ 进程组: Linux下每个进程都隶属于一个进程组，因此它们除了PID信息外，还有进程组ID(PGID)。我们可以
+用如下函数来获取指定进程的PGID:
+#include <unistd.h>
+pid_t getpgid(pid_t pid);
+int setpgid(pid_t pid, pid_t pgid);
+◼ 每个进程组都有一个首领进程，其PGID和PID相同。进程组将一直存在，直到其中所有进程退出，或者加入到
+其他进程组.
+◼ 一个进程只能设置自己或者其子进程的PGID。并且，当子进程调用exec系列函数后，我们也不能再在父进程
+中对它设置PGID.
+◼ 一些有关联的进程组将形成一个会话(session).
+◼ ps -o pid,ppid,pgid,sid,comm | less
+
+
+5. 系统资源限制
+◼ Linux上运行的程序都会受到资源限制的影响，比如物理设备限制，系统策略限制，以及具体实现的限制。
+Linux系统资源限制可以通过如下一对函数来获取和设置:
+#include <sys/resource.h>
+int getrlimit(int resource, struct rlimit *rlim);
+int setslimit(int resource, const struct rlimit *rlim);
+◼ 获取进程当前工作目录和改变进程工作目录的函数分分别是:
+#include <unistd.h>
+char* getcwd(char* buf, size_t size);
+int chdir(const char* path);
+◼ 服务器程序后台化:
+#include <unistd.h>
+int daemon(int nochdir, int noclose);
+其中，nochdir参数用于指定是否改变工作目录，如果给它传递0，则工作目录将被设置为根目录，否则继续
+使用当前工作目录。noclose参数为0时，标准输入，标准输出和标准错误输出都被重定向到/dev/null文件，
+否则依然使用原来的设备。该函数成功时返回0，失败则返回-1并设置errno。

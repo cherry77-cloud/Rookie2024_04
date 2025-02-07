@@ -32,3 +32,21 @@ int FD_ISSET(int fd, fd_set *fdset);    /* 测试fdset的位fd是否被设置 */
     ● socket上有未处理的错误。此时我们可以使用getsockopt来读取和清除该错误
 
 ◼ 网络编程中，select能处理的异常只有一种: socket上接收到带外数据。
+
+
+2. poll系统调用
+◼ poll系统调用和select类似，也是在指定时间内轮询一定数量的文件描述符，以测试其中是否有就绪者. poll的原型如下:
+#include <poll.h>
+int poll(struct pollfd* fds, nfds_t nfds, int timeout);
+1) fds参数是一个pollfd结构类型的数组，它指定所有我们感兴趣的文件描述符上发生的可读，可写和异常事件。pollfd结构体的定义如下:
+struct pollfd
+{
+    int fd;
+    short events;
+    short revents;
+}; 其中，fd成员指定文件描述符; events成员告诉poll监听fd上的哪些事件，它是一系列事件的按位或; revents成员则由内核修改，以通知应用程序fd
+上实际发生了哪些事件.
+2) nfds参数指定被监听事件集合fds的大小. 其类型nfds_t的定义如下:
+typedef unsigned long int nfds_t;
+3) timeout参数指定poll的超时值，单位是毫秒。当timeout为-1时，poll调用将永远阻塞，直到某个事件发生; 当timeout为0时，poll调用将立即返回. 
+poll系统调用的返回值的含义与select相同.

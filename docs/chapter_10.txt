@@ -1,0 +1,30 @@
+1. 信号
+◼ 信号是由用户，系统或者进程发送给目标进程的信息，以通知目标进程某个状态的改变或系统异常。Linux信号可由
+如下条件产生:
+    ● 对于前台进程，用户可以通过输入特殊的终端字符来给它发送信号.
+    ● 系统异常，比如浮点异常和非法内存访问
+    ● 系统状态变化，比如alarm定时器到期将引起SIGALRM信号
+    ● 运行kill命令或调用kill函数
+◼ 服务器程序必须处理(或至少忽略)一些常见的信号，以免异常终止.
+
+
+2. Linux信号概述
+◼ Linux下，一个进程给其他进程发送信号的API是kill函数。其定义如下:
+#include <sys/types.h>
+#include <signal.h>
+int kill(pid_t pid, int sig);
+该函数把信号sig发送给目标进程: 目标进程由pid参数指定
+
+◼ 信号处理方式
+● 目标进程在收到信号时，需要定义一个接收函数来处理之。信号处理函数的原型如下:
+#include <signal.h>
+typedef void (*__sighandler_t) (int);
+● 信号处理函数只带有一个整型参数，该参数用来指示信号类型。信号处理函数应该是可重入的，否则很容易
+引发一些竞态条件。所以在信号处理函数中严禁调用一些不安全的函数.
+● 除了用户自定义信号处理函数外，bits/signum.h头文件中还定义了信号的两种其他处理方式，
+SIG_IGN和SIG_DEL:
+#include <bits/signum.h>
+#define SIG_DFL ((__sighandler_t) 0)
+#define SIG_IGN ((__sighandler_t) 1)
+● SIG_IGN表示忽略目标信号，SIG_DFL表示使用信号的默认处理方式。信号的默认处理方式由如下几种:
+结束进程(Term), 忽略信号(Ign)，结束进程并生成核心转储文件(Core), 暂停进程(Stop), 以及继续进程(Cont).

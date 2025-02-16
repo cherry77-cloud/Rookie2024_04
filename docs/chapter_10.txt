@@ -32,3 +32,63 @@ SIG_IGN和SIG_DFL:
 ● 如果程序在执行处于阻塞状态的系统调用时接收到信号，并且我们为该信号设置了信号处理函数，则默认情况下系统调用将被中断，并且errno被设置
 为EINTR。我们可以使用sigaction函数为信号设置SA_RESTART标志以自动重启被该信号中断的系统调用.
 ● 对于默认行为是暂停进程的信号，如果我们没有为它们设置信号处理函数，则它们也可以中断某些系统调用(比如connect，epoll_wait).
+
+
+3. 信号函数
+◼ signal系统调用
+要为一个信号设置处理函数，可以使用下面的signal系统调用:
+#include <signal.h>
+_sighandler_t signal(int sig, _sighandler_t _handler)
+● sig参数指出要捕获的信号类型
+● _handler参数是_sighandler_t类型的函数指针，用于指定信号sig的处理函数
+
+◼ 设置信号处理函数的更健壮的接口是如下的系统调用
+#include <signal.h>
+int sigaction(int sig, const struct sigaction* act, struct sigaction* oact);
+● sig参数指出要捕获的信号类型
+● act参数指定新的信号处理方式
+● oact参数则输出信号先前的处理方式(如果不为NULL的话)
+
+
+4. 信号集
+◼ Linux使用数据结构sigset_t来表示一组信号。其定义如下:
+#include <bits/sigset.h>
+#define _SIGSET_NWORDS (1024 / (8 * sizeof(unsigned long int))
+typedef struct
+{
+    unsigned long int __val[_SIGSET_NWORDS];
+} __sigset_t;
+由该定义可见，sigset_t实际上是一个长整型数组，数组的每个元素的每个位表示一个信号。这种定义方式和
+文件描述符集fd_set类似。Linux提供了如下一组函数来设置，修改，删除和查询信号集:
+#include <signal.h>
+int sigemptyset(sigset_t* _set);
+int sigfillset(sigset_t* _set);
+int sigaddset(sigset_t* _set, int _signo);
+int sigdelset(sigset_t* _set, int _signo);
+int sigismember(const sigset_t* _set, int _signo);
+
+◼ 进程信号掩码
+可以利用sigaction结构体的sa_mask成员来设置进程的信号掩码。此外，如下函数也可以用于设置或查看进程
+的信号掩码:
+#include <signal.h>
+int sigprocmask(int how, const sigset_t* _set, sigset_t* _oset);
+● _set参数指定新的信号掩码
+● _oset参数则输出原来的信号掩码(不为NULL)
+● 如果_set参数不为NULL, 则how参数指定设置进程信号掩码的方式
+
+◼ 被挂起的信号
+设置进程信号掩码后，被屏蔽的信号将不能被进程接收。如果给进程发送一个被屏蔽的信号，则操作系统将该信号
+设置为进程的一个被挂起的信号。如果我们取消对被挂起信号的屏蔽，则它能立即被进程接收到。如下函数可以
+获得进程当前被挂起的信号集:
+#include <signal.h>
+int sigpending(sigset_t* set);
+
+
+5. 网络编程相关的信号
+◼ SIGHUP: 当挂起进程的控制终端时，SIGHUP信号将被触发。对于没有控制终端的网络后台程序而言，它们通常利用
+SIGHUP信号来强制服务器重读配置文件.
+◼ SIGPIPE: 默认情况下，往一个读端关闭的管道或socket连接中写数据将引发SIGPIPE信号。我们需要在代码中
+捕获并处理该信号，或者至少忽略它，因为程序接收到SIGPIPE信号的默认行为是结束进程，而我们绝对不希望因为
+错误的写操作而导致程序退出。引起SIGPIPE信号的写操作将设置errno为EPIPE.
+◼ SIGURG: 在Linux环境下，内核通知应用程序带外数据到达主要有两种方法: 一种是I/O复用技术，select等系统
+调用在接收到带外数据时将返回，并向应用程序报告socket上的异常事件; 另外一种方法就是使用SIGURG信号.

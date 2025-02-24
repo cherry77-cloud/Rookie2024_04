@@ -49,7 +49,9 @@ int main(int argc, char* argv[])
     }
 
     char remote_addr[INET_ADDRSTRLEN];
-    printf("connected with ip: %s and port: %d\n", inet_ntop(AF_INET, &client_address.sin_addr, remote_addr, INET_ADDRSTRLEN), ntohs(client_address.sin_port));
+    char* client_ip = inet_ntop(AF_INET, &client_address.sin_addr, remote_addr, INET_ADDRSTRLEN);
+    int client_port = ntohs(client_address.sin_port);
+    printf("connected with ip: %s and port: %d\n", client_ip, client_port);
 
     char buf[1024];
     fd_set read_fds;

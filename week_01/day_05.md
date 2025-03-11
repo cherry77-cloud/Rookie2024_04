@@ -85,6 +85,62 @@ ld -static \
   2. **分配地址**：为每个符号分配具体的内存地址。
   3. **修正引用**：根据符号的最终地址，修改所有对符号的引用。
 
+```mermaid
+graph TD
+    A[开始静态链接] --> B[输入文件]
+    B --> C[可重定位目标文件1]
+    B --> D[可重定位目标文件2]
+    B --> E[...]
+    B --> F[可重定位目标文件N]
+
+    C --> G[符号解析]
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H{符号冲突?}
+    H -->|是| I[解析规则处理]
+    H -->|否| J[合并节]
+
+    I --> J
+
+    J --> K[.text 节合并]
+    J --> L[.data 节合并]
+    J --> M[.bss 节合并]
+
+    K --> N[重定位]
+    L --> N
+    M --> N
+
+    N --> O[地址分配]
+    N --> P[引用修正]
+
+    O --> Q[生成可执行文件]
+    P --> Q
+
+    Q --> R[结束]
+
+    style G fill:#f9f,stroke:#333
+    style H fill:#f96,stroke:#333
+    style N fill:#6f9,stroke:#333
+
+    classDef process fill:#eef,stroke:#999;
+    class B,C,D,E,F,J,K,L,M,O,P,Q process;
+
+    %% 注释说明
+    subgraph 关键步骤说明
+        G["符号解析
+        - 建立全局符号表
+        - 解决强/弱符号冲突"]
+        H{"符号冲突检查
+        - 强符号重复？
+        - 弱符号覆盖？"}
+        N["重定位
+        - 合并后的节分配地址
+        - 修正符号引用地址"]
+    end
+```
+
 ---
 ```c++
 #include <stdio.h>

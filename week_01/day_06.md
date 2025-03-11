@@ -19,7 +19,13 @@
 - 执行程序：子进程调用`execve()`加载`ELF`文件，原进程等待。
 
 ```c++
-int execve(const char *filename, char *const argv[], char *const envp[]);
+int execl(const char *path, const char *arg, ..., (char *) NULL);
+int execv(const char *path, char *const argv[]);
+int execle(const char *path, const char *arg, ..., (char *) NULL, char *const envp[]);
+int execve(const char *path, char *const argv[], char *const envp[]);
+int execlp(const char *file, const char *arg, ..., (char *) NULL);
+int execvp(const char *file, char *const argv[]);
+int execvpe(const char *file, char *const argv[], char *const envp[]);
 ```
 #### 内核层流程
 - 系统调用链：`execve()` → `sys_execve()` → `do_execve()` → `search_binary_handle()` → `load_elf_binary()`。

@@ -116,11 +116,38 @@ MyString& operator=(MyString&& other) noexcept {
     return *this;
 }
 ```  
-- **完美转发**：与 `std::forward` 结合保留参数原始值类别。  
+
+--- 
+
+### 7. 完美转发（Perfect Forwarding）   
+- **万能引用**：模板中的 `T&&` 可绑定左值或右值。  
 ```cpp
 template<typename T>
+void wrapper(T&& arg) {
+    target(std::forward<T>(arg)); // 无损转发
+}
+```  
+- **引用折叠规则**：  
+    - `T& &` → `T&`  
+    - `T&& &` → `T&`  
+    - `T& &&` → `T&`  
+    - `T&& &&` → `T&&`  
+- **`std::forward`**：根据模板参数 `T` 的推导结果，将参数转发为左值或右值。  
+
+
+```cpp
+void process(int& x) { std::cout << "Lvalue: " << x << std::endl; }
+void process(int&& x) { std::cout << "Rvalue: " << x << std::endl; }
+
+template<typename T>
 void relay(T&& arg) {
-    target(std::forward<T>(arg)); // 左值转发为左值，右值转发为右值
+    process(std::forward<T>(arg)); // 完美转发
+}
+
+int main() {
+    int a = 10;
+    relay(a);       // 转发左值
+    relay(20);      // 转发右值
+    return 0;
 }
 ```
---- 

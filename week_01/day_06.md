@@ -103,13 +103,13 @@ int main()
 ---
 
 ## 四. `fork()` 函数
-### 功能
+#### 功能
 - **创建子进程**：通过复制父进程的地址空间生成一个几乎完全相同的子进程。
 - **执行流程**：
   - 父进程继续执行原代码。
   - 子进程从`fork()`返回处开始执行。
 
-### 返回值
+#### 返回值
 - **父进程**：返回子进程的`PID（>0）`。
 - **子进程**：返回`0`。
 - **失败**：返回`-1`（如系统进程数达到上限）。
@@ -133,3 +133,53 @@ int main() {
 ```
 
 ---
+
+## `wait()` 函数详解
+
+#### 功能
+- **回收子进程**：父进程调用`wait()`阻塞自身，直到任一子进程终止。
+- **获取退出状态**：通过参数`status`获取子进程的退出状态。
+
+#### status：指向整数的指针，用于存储子进程的退出状态。
+- `WIFEXITED(status)`：如果子进程通过调用`exit`或`return`正常终止，返回真。
+- `WEXITSTATUS(status)`：返回子进程的退出状态。仅在`WIFEXITED()`为真时定义。
+- `WIFSIGNALED(status)`：如果子进程因未捕获的信号终止，返回真。
+- `WTERMSIG(status)`：返回导致子进程终止的信号编号。仅在`WIFSIGNALED()`为真时定义。
+- `WIFSTOPPED(status)`：如果子进程当前处于停止状态，返回真。
+- `WSTOPSIG(status)`：返回导致子进程停止的信号编号。仅在`WIFSTOPPED()`为真时定义。
+- `WIFCONTINUED(status)`：如果子进程因收到`SIGCONT`信号而恢复运行，返回真。
+
+#### 返回值
+成功：返回终止子进程的`PID`。失败：返回`-1`（如没有子进程）
+
+```c++
+#include <sys/wait.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int main() {
+    pid_t pid = fork();
+    if (pid == 0) {
+        // Child process
+        printf("Child process running, PID: %d\n", getpid());
+        sleep(2);  // Simulate work
+        exit(42);  // Child exit code
+    } else if (pid > 0) {
+        // Parent process
+        int status;
+        printf("Parent waiting for child to finish...\n");
+        pid_t child_pid = wait(&status);  // Block until child terminates
+        if (WIFEXITED(status)) {
+            printf("Child PID: %d exited with status: %d\n", child_pid, WEXITSTATUS(status));
+        }
+    } else {
+        perror("fork failed");
+        exit(1);
+    }
+    return 0;
+}
+```
+- 阻塞行为：`wait()`会阻塞父进程，直到子进程终止。
+- 多子进程处理：若有多个子进程，`wait()`会回收任意一个终止的子进程。
+- 僵尸进程避免：未调用`wait()`会导致子进程成为僵尸进程。

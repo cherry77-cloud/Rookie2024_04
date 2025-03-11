@@ -54,4 +54,32 @@ ld -static \
 
 - 要运行可执行文件`prog`, 在`Linux Shell`的命令行上输入它的名字, `shell`调用操作系统中一个叫做加载器的函数, 它将可执行文件`prog`中的代码和数据复制到内存, 然后将控制转移到这个程序的开头.
 
+```c++
+#include <stdio.h>
+#include <dlfcn.h>
+#include <stdlib.h>
+
+int main(int argc, char* argv[])
+{
+    void *handle;
+    double (*func)(double);
+    char *error;
+
+    handle = dlopen(argv[1], RTLD_NOW);
+    if (handle == NULL) {
+        printf("Open library %s error: %s\n", argv[1], dlerror());
+        return -1;
+    }
+
+    func = dlsym(handle, "sin");
+    if ((error = dlerror()) != NULL) {
+        printf("Symbol sin not found: %s\n", error);
+        exit(-1);
+    }
+
+    printf("%f\n", func(3.1415926/2));
+    dlclose(handle);
+    return 0;
+}
+```
 ---

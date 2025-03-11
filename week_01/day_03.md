@@ -142,8 +142,7 @@ int main() {
 
 ### 8. 三五法则（Rule of Three/Five）  
 
-#### 三法则  
-若自定义以下任一函数，需定义全部三个：  
+#### 三法则: 若自定义以下任一函数，需定义全部三个：  
 1. **析构函数**  
 2. **拷贝构造函数**  
 3. **拷贝赋值运算符**  
@@ -179,4 +178,57 @@ public:
         int* data_;
         size_t size_;
   };
+```
+#### 五法则: 若涉及移动语义，还需定义以下两个函数：
+1. **移动构造函数**
+2. **移动赋值运算符**
+
+当类支持移动语义时，需遵循五法则，确保资源高效转移。
+```c++
+class Resource {
+public:
+    // 构造函数
+    Resource(size_t size) : data_(new int[size]), size_(size) {}
+
+    // 析构函数
+    ~Resource() { delete[] data_; }
+
+    // 拷贝构造函数
+    Resource(const Resource& other) : data_(new int[other.size_]), size_(other.size_) {
+        std::copy(other.data_, other.data_ + size_, data_);
+    }
+
+    // 拷贝赋值运算符
+    Resource& operator=(const Resource& other) {
+        if (this != &other) {
+            delete[] data_;
+            data_ = new int[other.size_];
+            size_ = other.size_;
+            std::copy(other.data_, other.data_ + size_, data_);
+        }
+        return *this;
+    }
+
+    // 移动构造函数
+    Resource(Resource&& other) noexcept : data_(other.data_), size_(other.size_) {
+        other.data_ = nullptr; // 置空源对象指针
+        other.size_ = 0;
+    }
+
+    // 移动赋值运算符
+    Resource& operator=(Resource&& other) noexcept {
+        if (this != &other) {
+            delete[] data_;
+            data_ = other.data_;
+            size_ = other.size_;
+            other.data_ = nullptr; // 置空源对象指针
+            other.size_ = 0;
+        }
+        return *this;
+    }
+
+private:
+    int* data_;
+    size_t size_;
+};
 ```

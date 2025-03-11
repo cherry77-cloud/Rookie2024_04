@@ -209,3 +209,40 @@ int main(int argc, char* argv[])
 #### 共享库的优势
 - **位置无关代码**：共享库可以加载到内存的任何位置，并在多个进程间共享。
 - **运行时加载**：应用程序可以在运行时使用动态链接器加载和访问共享库的函数和数据。
+---
+
+```c++
+char* str = "Hello world!\n";
+
+void print()
+{
+    asm volatile (
+        "movq $13, %%rdx \n\t"  // 字符串长度
+        "movq %0, %%rsi \n\t"   // 字符串地址
+        "movq $1, %%rdi \n\t"   // 文件描述符(1=stdout)
+        "movq $1, %%rax \n\t"   // 系统调用号(1=write)
+        "syscall \n\t"          // 64位系统调用指令
+        : 
+        : "r" (str)
+        : "rdx", "rsi", "rdi", "rax"
+    );
+}
+
+void my_exit()
+{
+    asm volatile (
+        "movq $42, %%rdi \n\t"  // 退出状态码
+        "movq $60, %%rax \n\t"  // 系统调用号(60=exit)
+        "syscall \n\t"
+        :
+        :
+        : "rdi", "rax"
+    );
+}
+
+void _start()
+{
+    print();
+    my_exit();
+}
+```

@@ -95,7 +95,7 @@ std::vector<int> v2 = std::move(v1);      // 转移资源
     std::vector<int> v1;
     std::vector<int> v2 = std::move(v1); // 转移 v1 的资源到 v2
     ```     
-  - 移动构造函数：从临时对象窃取资源。  
+- 移动构造函数：从临时对象窃取资源。  
       ```cpp
       class MyString {
       public:
@@ -105,7 +105,7 @@ std::vector<int> v2 = std::move(v1);      // 转移资源
           }
       };
       ```  
-  - 移动赋值运算符：高效转移资源到已存在对象。  
+- 移动赋值运算符：高效转移资源到已存在对象。  
       ```cpp
       MyString& operator=(MyString&& other) noexcept {
           if (this != &other) {

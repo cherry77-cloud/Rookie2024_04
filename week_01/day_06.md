@@ -126,7 +126,7 @@ int main() {
     } else if (pid > 0) {
         printf("Father Process PID: %d，Child Process PID: %d\n", getpid(), pid);
     } else {
-        perror("fork失败");
+        perror("fork fail");
     }
     return 0;
 }

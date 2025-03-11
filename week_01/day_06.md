@@ -34,7 +34,7 @@ int execvpe(const char *file, char *const argv[], char *const envp[]);
     - 定位动态链接器：解析`.interp`段，获取动态链接器路径（如`/lib/ld-linux.so`）。
     - 映射内存段：按程序头表（`Program Header`）将代码段、数据段映射到内存。
     - 初始化寄存器：设置`EDX为DT_FINI`（程序终止函数地址）。
-    - 跳转入口点：静态链接：直接跳转至`e_entry`地址; 动态链接：跳转至动态链接器入口，完成符号解析后再执行程序。
+    - 跳转入口点：静态链接 -> 直接跳转至`e_entry`地址; 动态链接 -> 跳转至动态链接器入口，完成符号解析后再执行程序。
 
 ```c++
 #include <stdio.h>

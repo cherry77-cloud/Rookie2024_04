@@ -30,9 +30,38 @@ int execve(const char *filename, char *const argv[], char *const envp[]);
     - 初始化寄存器：设置`EDX为DT_FINI`（程序终止函数地址）。
     - 跳转入口点：静态链接：直接跳转至`e_entry`地址; 动态链接：跳转至动态链接器入口，完成符号解析后再执行程序。
 
+```c++
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main()
+{
+    char buf[1024] = {0};
+    pid_t pid;
+    while(1) {
+        printf("minibash$");
+        scanf("%s", buf);
+        pid = fork();
+        if(pid == 0) {
+            if(execlp(buf, 0 ) < 0) {
+                printf("exec error\n");
+            }
+        } else if(pid > 0){
+            int status;
+            waitpid(pid,&status,0);
+        } else {
+            printf("fork error %d\n",pid);
+        }
+    }
+    return 0;
+}
+```
+
 ---
 
-三. `PE`文件装载（`Windows`）
+
+### 三. `PE`文件装载（`Windows`）
 - 解析文件头：读取`DOS`头、`PE`头、段表。
 - 地址空间检查：若目标地址被占用，重新选择基址（`Rebasing`）。
 - 段映射：将PE文件的代码段（`.text`）、数据段（`.data`）映射到内存。

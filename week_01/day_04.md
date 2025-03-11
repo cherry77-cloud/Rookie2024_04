@@ -88,3 +88,150 @@ if (auto lockedPtr = weakPtr.lock()) {
 - 优先使用：`make_shared<T>()` 和 `make_unique<T>()` 创建智能指针，避免直接操作裸指针。
 - `C++` 智能指针通过 `RAII` 机制和引用计数，提供了高效、安全的内存管理方式
 - `unique_ptr`：独占所有权，适合单一所有者场景。`shared_ptr`：共享所有权，适合多所有者场景。`weak_ptr`：观察者模式，解决循环引用问题。
+---
+
+```c++
+#include <iostream>
+#include <memory>
+
+class Test {
+public:
+    Test(int val) : value(val) { std::cout << "Test Constructor: " << value << std::endl; }
+    ~Test() { std::cout << "Test Destructor: " << value << std::endl; }
+    void show() const { std::cout << "Value: " << value << std::endl; }
+private:
+    int value;
+};
+
+std::unique_ptr<Test> createTest(int val) 
+{
+    auto ptr = std::make_unique<Test>(val);
+    return ptr;
+}
+
+int main() 
+{
+    std::unique_ptr<Test> ptr1(new Test(100));  
+    ptr1->show();
+
+    auto ptr2 = std::make_unique<Test>(200);
+    ptr2->show();
+
+    std::unique_ptr<Test> ptr3 = std::move(ptr1);
+    if (!ptr1) {
+        std::cout << "ptr1 is now null after std::move." << std::endl;
+    }
+    ptr3->show();
+
+    ptr2.reset(new Test(300));   // Test Destructor: 200
+    ptr2->show();
+
+    Test* rawPtr = ptr3.release();
+    if (!ptr3) {
+        std::cout << "ptr3 is now null after release." << std::endl;
+    }
+    if (rawPtr) {
+        std::cout << "rawPtr (from ptr3): ";
+        rawPtr->show();
+        delete rawPtr;  // Test Destructor: 100
+        rawPtr = nullptr;
+    }
+
+    auto ptr4 = createTest(400);   // Test Destructor: 400  Test Destructor: 300
+    return 0;
+}
+```
+
+---
+
+```c++
+#include <iostream>
+#include <memory>
+
+class Test {
+public:
+    Test(int val) : value(val) {
+        std::cout << "Test Constructor: " << value << std::endl;
+    }
+    ~Test() {
+        std::cout << "Test Destructor: " << value << std::endl;
+    }
+    void show() const {
+        std::cout << "Value: " << value << std::endl;
+    }
+
+private:
+    int value;
+};
+
+int main() 
+{
+    // 1. 创建一个 shared_ptr
+    std::shared_ptr<Test> sp1(new Test(100));
+    std::cout << "sp1 use_count: " << sp1.use_count() << std::endl;
+    sp1->show();
+
+    // 2. 通过拷贝构造共享所有权
+    std::shared_ptr<Test> sp2 = sp1;
+    std::cout << "After sp2 = sp1:" << std::endl;
+    std::cout << "sp1 use_count: " << sp1.use_count() << std::endl;
+    std::cout << "sp2 use_count: " << sp2.use_count() << std::endl;
+
+    // 3. 通过拷贝赋值共享所有权
+    std::shared_ptr<Test> sp3;
+    sp3 = sp2;
+    std::cout << "After sp3 = sp2:" << std::endl;
+    std::cout << "sp1 use_count: " << sp1.use_count() << std::endl;
+    std::cout << "sp2 use_count: " << sp2.use_count() << std::endl;
+    std::cout << "sp3 use_count: " << sp3.use_count() << std::endl;
+
+    // 4. 重置 shared_ptr
+    sp2.reset(new Test(200));
+    std::cout << "After sp2.reset(new Test(200)):" << std::endl;
+    std::cout << "sp1 use_count: " << sp1.use_count() << std::endl;
+    std::cout << "sp2 use_count: " << sp2.use_count() << std::endl;
+    std::cout << "sp3 use_count: " << sp3.use_count() << std::endl;
+    sp2->show();
+
+    std::cout << "Exiting main..." << std::endl;
+    return 0;
+}
+```
+
+---
+
+```c++
+// 双向关联导致循环引用
+#include <iostream>
+#include <memory>
+
+class B; // 前向声明
+
+class A {
+public:
+    std::shared_ptr<B> ptrB;
+
+    A() { std::cout << "A Constructor" << std::endl; }
+    ~A() { std::cout << "A Destructor" << std::endl; }
+};
+
+class B {
+public:
+    std::shared_ptr<A> ptrA;
+
+    B() { std::cout << "B Constructor" << std::endl; }
+    ~B() { std::cout << "B Destructor" << std::endl; }
+};
+
+int main() 
+{
+    {
+        std::shared_ptr<A> a = std::make_shared<A>();
+        std::shared_ptr<B> b = std::make_shared<B>();
+        a->ptrB = b;
+        b->ptrA = a;
+    }
+    std::cout << "Exiting main..." << std::endl;
+    return 0;
+}
+```

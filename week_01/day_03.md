@@ -96,9 +96,8 @@ std::vector<int> v2 = std::move(v1);      // 转移资源
     ```cpp
     std::vector<int> v1;
     std::vector<int> v2 = std::move(v1); // 转移 v1 的资源到 v2
-    ```  
-- **用途**：  
-  - **实现移动语义**：  
+    ```   
+- **实现移动语义**：  
     - 移动构造函数：从临时对象窃取资源。  
       ```cpp
       class MyString {
@@ -121,7 +120,7 @@ std::vector<int> v2 = std::move(v1);      // 转移资源
           return *this;
       }
       ```  
-  - **完美转发**：与 `std::forward` 结合保留参数原始值类别。  
+- **完美转发**：与 `std::forward` 结合保留参数原始值类别。  
     ```cpp
     template<typename T>
     void relay(T&& arg) {

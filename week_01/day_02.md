@@ -99,7 +99,7 @@
 - `vtable` 中通常包含类型信息（如 `type_info`），支持 `dynamic_cast` 和 `typeid`。  
 ---
 
-重载示例
+**重载示例**
 ```c++
 #include <iostream>
 
@@ -143,4 +143,74 @@ int main()
 // _ZN1C4funcEi           c++filt _ZN1C4funcE  ->  C::func(int)
 // _ZN1N1C4funcEi         c++filt _ZN1N1C4funcEi  ->  N::C::func(int)
 // _ZN1N4funcEi           c++filt _ZN1N4funcEi  ->  N::func(int)
+```
+
+**多态示例-1**
+```c++
+#include <iostream>
+#include <memory>
+
+class Base {
+public:
+    virtual void func() {
+        std::cout << "Base::func" << std::endl;
+    }
+    virtual ~Base() = default;
+};
+
+class Derive : public Base {
+public:
+    void func() override {
+        std::cout << "Derive::func" << std::endl;
+    }
+};
+
+int main()
+{
+    auto pbase1 = std::make_unique<Base>();
+    auto pbase2 = std::make_unique<Derive>();
+    pbase1->func(); // Base::func
+    pbase2->func(); // Derive::func
+    return 0;
+}
+```
+
+**多态示例-2**
+```c++
+#include <iostream>
+#include <memory>
+#include <cstdint>
+
+class Base {
+public:
+    virtual void func() {
+        std::cout << "Base::func" << std::endl;
+    }
+    virtual ~Base() = default;
+};
+
+class Derive : public Base {
+public:
+    void func() override {
+        std::cout << "Derive::func" << std::endl;
+    }
+};
+
+typedef void (*FuncPtr)(void);
+
+int main()
+{
+    std::unique_ptr<Base> pbase1 = std::make_unique<Base>();
+    std::unique_ptr<Base> pbase2 = std::make_unique<Derive>();
+
+    uintptr_t* vptr1 = *(uintptr_t**)pbase1.get();
+    uintptr_t* vptr2 = *(uintptr_t**)pbase2.get();
+
+    FuncPtr f1 = reinterpret_cast<FuncPtr>(vptr1[0]);
+    FuncPtr f2 = reinterpret_cast<FuncPtr>(vptr2[0]);
+    
+    f1();
+    f2();
+    return 0;
+}
 ```

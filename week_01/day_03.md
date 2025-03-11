@@ -46,6 +46,86 @@
 - **示例**：  
 ```cpp
 std::vector<int> v1 = std::vector<int>(); // 右值 -> 将亡值
-std::vector<int> v2 = std::move(v1);     // 转移资源
+std::vector<int> v2 = std::move(v1);      // 转移资源
 ```
 ---
+
+### 5. 左值引用  
+- **语法**：`T&`  
+- **绑定规则**：  
+  - 非 `const` 左值引用只能绑定到**左值**（如变量、可修改的对象）。  
+    ```cpp
+    int a = 10;
+    int& ref = a;    // ✅ 正确
+    int& ref2 = 20;  // ❌ 错误：右值无法绑定到非 const 左值引用
+    ```  
+  - `const` 左值引用可绑定到**左值或右值**，并延长右值的生命周期。  
+    ```cpp
+    const int& cref1 = a;     // ✅ 绑定左值
+    const int& cref2 = 30;    // ✅ 绑定右值，生命周期延长至引用作用域结束
+    ```  
+- **用途**：  
+  - **避免拷贝**：函数参数传递时直接操作原对象。  
+    ```cpp
+    void process(const std::string& str) { /* 避免字符串拷贝 */ }
+    ```  
+  - **链式调用**：返回对象引用以支持连续操作。  
+    ```cpp
+    class Widget {
+    public:
+        Widget& setName(const std::string& name) { 
+            /* ... */ 
+            return *this; 
+        }
+    };
+    widget.setName("A").setName("B"); // 链式调用
+    ```  
+
+---
+
+### 6. 右值引用  
+- **语法**：`T&&`  
+- **绑定规则**：  
+  - 仅能绑定到**右值**或**将亡值（xvalue）**。  
+    ```cpp
+    int&& rref1 = 42;          // ✅ 绑定右值
+    int&& rref2 = std::move(a); // ✅ 绑定将亡值（通过 std::move 转换左值）
+    int&& rref3 = a;           // ❌ 错误：不能直接绑定左值
+    ```  
+  - 使用 `std::move` 将左值显式转换为右值引用。  
+    ```cpp
+    std::vector<int> v1;
+    std::vector<int> v2 = std::move(v1); // 转移 v1 的资源到 v2
+    ```  
+- **用途**：  
+  - **实现移动语义**：  
+    - 移动构造函数：从临时对象窃取资源。  
+      ```cpp
+      class MyString {
+      public:
+          MyString(MyString&& other) noexcept 
+              : data_(other.data_), size_(other.size_) {
+              other.data_ = nullptr; // 置空源对象指针
+          }
+      };
+      ```  
+    - 移动赋值运算符：高效转移资源到已存在对象。  
+      ```cpp
+      MyString& operator=(MyString&& other) noexcept {
+          if (this != &other) {
+              delete[] data_;
+              data_ = other.data_;
+              size_ = other.size_;
+              other.data_ = nullptr;
+          }
+          return *this;
+      }
+      ```  
+  - **完美转发**：与 `std::forward` 结合保留参数原始值类别。  
+    ```cpp
+    template<typename T>
+    void relay(T&& arg) {
+        target(std::forward<T>(arg)); // 左值转发为左值，右值转发为右值
+    }
+    ```
+--- 

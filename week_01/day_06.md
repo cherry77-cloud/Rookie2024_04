@@ -122,9 +122,9 @@ int main()
 int main() {
     pid_t pid = fork();
     if (pid == 0) {
-        printf("子进程 PID: %d\n", getpid());
+        printf("child process PID: %d\n", getpid());
     } else if (pid > 0) {
-        printf("父进程 PID: %d，子进程 PID: %d\n", getpid(), pid);
+        printf("Father Process PID: %d，Child Process PID: %d\n", getpid(), pid);
     } else {
         perror("fork失败");
     }

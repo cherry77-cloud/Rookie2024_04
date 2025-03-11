@@ -95,29 +95,8 @@ int&& rref3 = a;             // ❌ 错误：不能直接绑定左值
 std::vector<int> v1;
 std::vector<int> v2 = std::move(v1); // 转移 v1 的资源到 v2
 ```     
-- 移动构造函数：从临时对象窃取资源。  
-```cpp
-class MyString {
-public:
-    MyString(MyString&& other) noexcept : data_(other.data_), size_(other.size_) {
-        other.data_ = nullptr; // 置空源对象指针
-    }
-};
-```  
-- 移动赋值运算符：高效转移资源到已存在对象。  
-```cpp
-MyString& operator=(MyString&& other) noexcept {
-    if (this != &other) {
-          delete[] data_;
-          data_ = other.data_;
-          size_ = other.size_;
-          other.data_ = nullptr;
-    }
-    return *this;
-}
-```  
-
 --- 
+
 
 ### 7. 完美转发（Perfect Forwarding）   
 - **万能引用**：模板中的 `T&&` 可绑定左值或右值。  
@@ -158,3 +137,46 @@ int main() {
 | **修改绑定**         | 不可重绑定               | 不可重绑定               |
 | **延长右值生命周期** | 支持（仅 `const T&`）    | 不适用                   |
 | **典型应用场景**     | 避免拷贝、链式调用       | 移动语义、完美转发       |
+
+---
+
+### 8. 三五法则（Rule of Three/Five）  
+
+#### 三法则  
+若自定义以下任一函数，需定义全部三个：  
+1. **析构函数**  
+2. **拷贝构造函数**  
+3. **拷贝赋值运算符**  
+ 
+当类管理动态资源（如堆内存、文件句柄等）时，需遵循三法则，确保资源正确释放和拷贝。  
+  
+```cpp
+class Resource {
+public:
+    // 构造函数
+    Resource(size_t size) : data_(new int[size]), size_(size) {}
+
+    // 析构函数
+    ~Resource() { delete[] data_; }
+
+    // 拷贝构造函数
+    Resource(const Resource& other) : data_(new int[other.size_]), size_(other.size_) {
+        std::copy(other.data_, other.data_ + size_, data_);
+    }
+
+    // 拷贝赋值运算符
+    Resource& operator=(const Resource& other) {
+        if (this != &other) {
+            delete[] data_;
+            data_ = new int[other.size_];
+            size_ = other.size_;
+            std::copy(other.data_, other.data_ + size_, data_);
+        }
+        return *this;
+    }
+
+    private:
+        int* data_;
+        size_t size_;
+  };
+```

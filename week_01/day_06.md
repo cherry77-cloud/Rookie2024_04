@@ -14,17 +14,17 @@
 
 ### 二. `ELF`文件装载过程（`Linux`）
 #### 用户层流程
-    - 创建子进程：`bash`调用`fork()`生成新进程。
-    - 执行程序：子进程调用`execve()`加载`ELF`文件，原进程等待。
+- 创建子进程：`bash`调用`fork()`生成新进程。
+- 执行程序：子进程调用`execve()`加载`ELF`文件，原进程等待。
 
 ```c++
 int execve(const char *filename, char *const argv[], char *const envp[]);
 ```
 #### 内核层流程
 - 系统调用链：`execve()` → `sys_execve()` → `do_execve()` → `search_binary_handle()` → `load_elf_binary()`。
-关键函数：load_elf_binary()（定义于fs/Binfmt_elf.c）：
-验证ELF格式：检查魔数（0x7F 0x45 0x4C 0x46）、程序头表合法性。
-定位动态链接器：解析.interp段，获取动态链接器路径（如/lib/ld-linux.so）。
-映射内存段：按程序头表（Program Header）将代码段、数据段映射到内存。
-初始化寄存器：设置EDX为DT_FINI（程序终止函数地址）。
-跳转入口点：静态链接：直接跳转至e_entry地址。动态链接：跳转至动态链接器入口，完成符号解析后再执行程序。
+- 关键函数：`load_elf_binary()`（定义于`fs/Binfmt_elf.c`）：
+1. 验证`ELF`格式：检查魔数（`0x7F 0x45 0x4C 0x46`）、程序头表合法性。
+2. 定位动态链接器：解析`.interp`段，获取动态链接器路径（如`/lib/ld-linux.so`）。
+3. 映射内存段：按程序头表（`Program Header`）将代码段、数据段映射到内存。
+4. 初始化寄存器：设置`EDX为DT_FINI`（程序终止函数地址）。
+5. 跳转入口点：静态链接：直接跳转至`e_entry`地址; 动态链接：跳转至动态链接器入口，完成符号解析后再执行程序。

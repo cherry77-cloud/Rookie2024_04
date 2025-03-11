@@ -57,10 +57,17 @@
 | **移动构造/赋值**  | 转移所有权，原指针置空                                               |
 | **自定义删除器**   | 支持自定义删除器，用于管理非 `new` 分配的资源                        |
 
-#### 控制块结构
+
 ```cpp
 std::shared_ptr<int> ptr1(new int(10)); // 从裸指针构造
 std::shared_ptr<int> ptr2 = ptr1; // 拷贝构造，引用计数增加
 std::shared_ptr<int> ptr3 = std::move(ptr1); // 移动构造，ptr1 置空
 ```
 ---
+
+### 6. `std::weak_ptr`
+#### 核心特性 
+- 非拥有观察者：不增加引用计数，不管理资源生命周期。
+- 解决循环引用：打破 `shared_ptr` 双向依赖导致的资源泄漏。
+- `lock()`返回一个 `shared_ptr`，若资源存在则有效，否则为空
+- `expired()`检查资源是否已被释放

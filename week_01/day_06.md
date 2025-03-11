@@ -31,3 +31,11 @@ int execve(const char *filename, char *const argv[], char *const envp[]);
     - 跳转入口点：静态链接：直接跳转至`e_entry`地址; 动态链接：跳转至动态链接器入口，完成符号解析后再执行程序。
 
 ---
+
+三. `PE`文件装载（`Windows`）
+- 解析文件头：读取`DOS`头、`PE`头、段表。
+- 地址空间检查：若目标地址被占用，重新选择基址（`Rebasing`）。
+- 段映射：将PE文件的代码段（`.text`）、数据段（`.data`）映射到内存。
+- 依赖解析：装载所需的DLL文件，解析导入表（`Import Table`）。
+- 初始化环境：依据`PE`头初始化栈、堆空间。
+- 启动进程：创建主线程，从入口点（`AddressOfEntryPoint`）开始执行。

@@ -212,6 +212,7 @@ int main(int argc, char* argv[])
 ---
 
 ```c++
+// gcc -nostdlib -o hello hello.c
 char* str = "Hello world!\n";
 
 void print()

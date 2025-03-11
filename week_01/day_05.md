@@ -86,34 +86,7 @@ ld -static \
   3. **修正引用**：根据符号的最终地址，修改所有对符号的引用。
 
 ---
-```c++
-#include <stdio.h>
-#include <dlfcn.h>
-#include <stdlib.h>
 
-int main(int argc, char* argv[])
-{
-    void *handle;
-    double (*func)(double);
-    char *error;
-
-    handle = dlopen(argv[1], RTLD_NOW);
-    if (handle == NULL) {
-        printf("Open library %s error: %s\n", argv[1], dlerror());
-        return -1;
-    }
-
-    func = dlsym(handle, "sin");
-    if ((error = dlerror()) != NULL) {
-        printf("Symbol sin not found: %s\n", error);
-        exit(-1);
-    }
-
-    printf("%f\n", func(3.1415926/2));
-    dlclose(handle);
-    return 0;
-}
-```
 ---
 
 ### 五. 动态链接
@@ -153,13 +126,34 @@ int main(int argc, char* argv[])
   - 合并全局符号表，处理符号冲突（全局符号介入）
   - 重定位`GOT/PLT`，执行模块初始化代码（`.init`段）
 
+动态链接通过运行时加载和地址无关技术，实现了内存节省、部署灵活和跨平台兼容。尽管存在启动延迟和间接访问开销，但通过延迟绑定和`PIC`技术有效缓解了性能问题，成为现代操作系统的核心基础架构。显式运行时链接进一步扩展了动态性，为模块化开发和插件系统提供了坚实基础。
 
-```mermaid
-graph TD
-    A[程序启动] --> B[加载动态链接器]
-    B --> C[解析.interp段获取链接器路径]
-    C --> D[装载主程序与依赖共享库]
-    D --> E[符号解析与重定位]
-    E --> F[执行.init段初始化]
-    F --> G[跳转主程序入口]
+```c++
+```c++
+#include <stdio.h>
+#include <dlfcn.h>
+#include <stdlib.h>
+
+int main(int argc, char* argv[])
+{
+    void *handle;
+    double (*func)(double);
+    char *error;
+
+    handle = dlopen(argv[1], RTLD_NOW);
+    if (handle == NULL) {
+        printf("Open library %s error: %s\n", argv[1], dlerror());
+        return -1;
+    }
+
+    func = dlsym(handle, "sin");
+    if ((error = dlerror()) != NULL) {
+        printf("Symbol sin not found: %s\n", error);
+        exit(-1);
+    }
+
+    printf("%f\n", func(3.1415926/2));
+    dlclose(handle);
+    return 0;
+}
 ```

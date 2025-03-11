@@ -185,3 +185,59 @@ int main() {
 - 僵尸进程避免：未调用`wait()`会导致子进程成为僵尸进程。
 
 ---
+
+## 六. `waitpid()` 函数详解
+
+- `waitpid()` 是一个用于等待特定子进程终止或状态变化的系统调用。与 `wait()` 相比，`waitpid()` 提供了更多的灵活性，允许父进程指定等待的子进程以及控制等待的行为（如非阻塞模式）。
+
+
+```c
+#include <sys/wait.h>
+pid_t wait(int *status);
+pid_t waitpid(pid_t pid, int *status, int options);
+```
+
+- `options`：控制 `waitpid()` 行为的选项，常用选项包括：
+  - `WNOHANG`：非阻塞模式。如果没有子进程终止，立即返回0。
+  - `WUNTRACED`：回收已停止的子进程。
+  - `WCONTINUED`：回收因 `SIGCONT` 信号恢复运行的子进程。
+ 
+```c
+#include <sys/wait.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int main() {
+    pid_t pid = fork();
+    if (pid == 0) {
+        // Child process
+        printf("Child process running, PID: %d\n", getpid());
+        sleep(2);  // Simulate work
+        exit(42);  // Child exit code
+    } else if (pid > 0) {
+        // Parent process
+        int status;
+        printf("Parent waiting for child to finish...\n");
+        while (1) {
+            pid_t child_pid = waitpid(pid, &status, WNOHANG);  // Non-blocking wait
+            if (child_pid == 0) {
+                printf("Child still running, parent doing other work...\n");
+                sleep(1);  // Simulate parent doing other work
+            } else if (child_pid > 0) {
+                if (WIFEXITED(status)) {
+                    printf("Child PID: %d exited with status: %d\n", child_pid, WEXITSTATUS(status));
+                }
+                break;
+            } else {
+                perror("waitpid failed");
+                exit(1);
+            }
+        }
+    } else {
+        perror("fork failed");
+        exit(1);
+    }
+    return 0;
+}
+```

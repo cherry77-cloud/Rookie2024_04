@@ -86,9 +86,9 @@ widget.setName("A").setName("B"); // 链式调用
 - **语法**：`T&&`    
 - 仅能绑定到**右值**或**将亡值（xvalue）**。  
 ```cpp
-int&& rref1 = 42;          // ✅ 绑定右值
-int&& rref2 = std::move(a); // ✅ 绑定将亡值（通过 std::move 转换左值）
-int&& rref3 = a;           // ❌ 错误：不能直接绑定左值
+int&& rref1 = 42;            // ✅ 绑定右值
+int&& rref2 = std::move(a);  // ✅ 绑定将亡值（通过 std::move 转换左值）
+int&& rref3 = a;             // ❌ 错误：不能直接绑定左值
 ```  
 - 使用 `std::move` 将左值显式转换为右值引用。  
 ```cpp

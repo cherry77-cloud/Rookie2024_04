@@ -87,58 +87,44 @@ ld -static \
 
 ```mermaid
 graph TD
-    A[开始静态链接] --> B[输入文件]
-    B --> C[可重定位目标文件1]
-    B --> D[可重定位目标文件2]
-    B --> E[...]
-    B --> F[可重定位目标文件N]
-
-    C --> G[符号解析]
-    D --> G
-    E --> G
-    F --> G
-
-    G --> H{符号冲突?}
-    H -->|是| I[解析规则处理]
-    H -->|否| J[合并节]
-
-    I --> J
-
-    J --> K[.text 节合并]
-    J --> L[.data 节合并]
-    J --> M[.bss 节合并]
-
-    K --> N[重定位]
-    L --> N
-    M --> N
-
-    N --> O[地址分配]
-    N --> P[引用修正]
-
-    O --> Q[生成可执行文件]
-    P --> Q
-
-    Q --> R[结束]
-
-    style G fill:#f9f,stroke:#333
-    style H fill:#f96,stroke:#333
-    style N fill:#6f9,stroke:#333
-
-    classDef process fill:#eef,stroke:#999;
-    class B,C,D,E,F,J,K,L,M,O,P,Q process;
-
-    %% 注释说明
-    subgraph 关键步骤说明
-        G["符号解析
-        - 建立全局符号表
-        - 解决强/弱符号冲突"]
-        H{"符号冲突检查
-        - 强符号重复？
-        - 弱符号覆盖？"}
-        N["重定位
-        - 合并后的节分配地址
-        - 修正符号引用地址"]
+    subgraph 静态链接流程
+        A(("开始")) --> B[输入目标文件]
+        B --> C[符号解析]
+        C --> D{符号冲突?}
+        D -->|是| E[按规则处理]
+        D -->|否| F[节合并与重定位]
+        E --> F
+        F --> G[生成可执行文件]
+        G --> H(("结束"))
     end
+
+    subgraph 符号解析
+        C1[收集符号表] --> C2[强符号验证]
+        C2 --> C3[弱符号处理]
+    end
+
+    subgraph 重定位关键操作
+        F1[.text合并] --> F2[地址分配]
+        F2 --> F3[引用修正]
+    end
+
+    style A fill:#4A90E2,color:white
+    style H fill:#4A90E2,color:white
+    style B fill:#7EC8E3
+    style C fill:#7EC8E3
+    style D fill:#FF6F61,color:white
+    style E fill:#FF6F61,color:white
+    style F fill:#7EC8E3
+    style G fill:#4A90E2,color:white
+
+    classDef process fill:#7EC8E3,stroke:#4A89BF;
+    classDef decision fill:#FF6F61,stroke:#CC554F;
+    classDef terminal fill:#4A90E2,stroke:#2A6496;
+    class B,C,F process;
+    class D,E decision;
+    class A,H terminal;
+
+    linkStyle 0,1,2,3,4,5 stroke:#4A89BF,stroke-width:2px;
 ```
 
 ---

@@ -14,19 +14,19 @@
 
 ### 2. 编译系统工作流程
 - 大多数编译系统提供编译器驱动程序, 它代表用户在需要时调用预处理器, 编译器, 汇编器和链接器.
-- 驱动程序首先运行`C`预处理器(`cpp`), 它将`C`的源程序`main.c`翻译成一个`ASCII`码的中间文件 `main.i`
+- 驱动程序首先运行`C`预处理器`cpp`, 它将`C`的源程序`main.c`翻译成一个`ASCII`码的中间文件 `main.i`
 ```bash
 # 处理宏定义、头文件展开, 生成预处理后文本文件
 cpp main.c > main.i
 ```
 
-- 接下来, 驱动程序运行`C`编译器(`cc1`), 它将 `main.i` 翻译成一个`ASCII`汇编语言文件 `main.s`
+- 接下来, 驱动程序运行`C`编译器`cc1`, 它将 `main.i` 翻译成一个`ASCII`汇编语言文件 `main.s`
 ```bash
 # 语法/语义分析, 生成平台相关的汇编代码
 cc1 -Og main.i -o main.s
 ```
 
-- 然后, 驱动程序运行汇编器(`as`), 它将`main.s`翻译成一个可重定位目标文件 `main.o`
+- 然后, 驱动程序运行汇编器`as`, 它将`main.s`翻译成一个可重定位目标文件 `main.o`
 ```bash
 # 生成可重定位目标文件, 包含机器指令和符号表
 as main.s -o main.o
@@ -35,8 +35,8 @@ as main.s -o main.o
 - 驱动程序经过相同的过程生成`sum.o`. 最后, 它运行链接器程序`ld`, 将 `main.o` 和 `sum.o` 以及一些必要的系统目标文件组合起来, 创建一个可执行目标文件`prog`.
 ```bash
 # 符号解析与重定位, 生成可执行目标文件
--> ld -o prog [system object files and args] /tmp/main.o /tmp/sum.o
--> ld -static \
+ld -o prog [system object files and args] /tmp/main.o /tmp/sum.o
+ld -static \
     /usr/lib/x86_64-linux-gnu/crt1.o \
     /usr/lib/x86_64-linux-gnu/crti.o \
     /usr/lib/gcc/x86_64-linux-gnu/11/crtbeginT.o \

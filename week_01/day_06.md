@@ -101,3 +101,35 @@ int main()
 | `.rela.data`  | 只读              | `.data`段的重定位信息                      |
 
 ---
+
+## 四. `fork()` 函数
+### 功能
+- **创建子进程**：通过复制父进程的地址空间生成一个几乎完全相同的子进程。
+- **执行流程**：
+  - 父进程继续执行原代码。
+  - 子进程从`fork()`返回处开始执行。
+
+### 返回值
+- **父进程**：返回子进程的`PID（>0）`。
+- **子进程**：返回`0`。
+- **失败**：返回`-1`（如系统进程数达到上限）。
+
+
+```c
+#include <unistd.h>
+#include <stdio.h>
+
+int main() {
+    pid_t pid = fork();
+    if (pid == 0) {
+        printf("子进程 PID: %d\n", getpid());
+    } else if (pid > 0) {
+        printf("父进程 PID: %d，子进程 PID: %d\n", getpid(), pid);
+    } else {
+        perror("fork失败");
+    }
+    return 0;
+}
+```
+
+---

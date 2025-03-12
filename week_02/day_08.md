@@ -36,7 +36,6 @@ add_executable(Tutorial tutorial.cxx)
 ```
 
 ```bash
-# 配置CMake项目
 cmake -G "MinGW Makefiles" ..
 # cmake: 调用CMake程序
 # -G "MinGW Makefiles": 指定生成器类型。告诉CMake使用MinGW的make工具来构建项目
@@ -49,4 +48,3 @@ mingw32-make
 # mingw32-make: 直接调用MinGW提供的make工具（Windows上不能直接使用make命令）
 ```
 ---
-

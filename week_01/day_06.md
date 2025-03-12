@@ -321,7 +321,36 @@ int main() {
     return 0;
 }
 ```
+---
+```c
+bool daemonize(void)
+{
+    pid_t pid = fork();
+    if (pid < 0) {
+        return false;
+    }
+    else if (pid > 0) {
+        exit(0);
+    }
+    umask(0);
+    pid_t sid = setsid();
+    if (sid < 0) {
+        return false;
+    }
+    if ((chdir("/")) < 0) {
+        return false;
+    }
 
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    open("/dev/null", O_RDONLY);
+    open("/dev/null", O_RDWR);
+    open("/dev/null", O_RDWR);
+    return true;
+}
+```
 | 进程类型   | 定义                                                                 | 特点                                                                 | 处理方式                                                                 |
 |------------|----------------------------------------------------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------|
 | 僵尸进程   | 子进程已终止，但父进程未回收其退出状态。                                   | 占用`PID`，不占用内存；大量僵尸进程会导致PID耗尽。                        | 父进程调用 `wait()` 或 `waitpid()` 回收子进程。                           |

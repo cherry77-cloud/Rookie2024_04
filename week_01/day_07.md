@@ -152,7 +152,8 @@ fds[1].events = POLLIN;
 #include <poll.h>
 #include <unistd.h>
 
-int main() {
+int main()
+{
     struct pollfd fds[2];
     fds[0].fd = STDIN_FILENO;
     fds[0].events = POLLIN;

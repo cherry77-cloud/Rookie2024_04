@@ -20,6 +20,11 @@
 
 ## 二. 练习一
 
+- `cmake_minimum_required`: 指定 `CMake` 的最低版本要求，确保项目使用的 `CMake` 功能与版本兼容。
+- `project`: 定义项目名称，并隐式启用默认编程语言（`C/C++`）。设置变量 `PROJECT_NAME` 为项目名称。自动检测系统默认的 `C/C++` 编译器。
+  - `project(<PROJECT-NAME> [LANGUAGES] [<language>...])`
+- `add_executable`: 生成一个可执行文件目标，指定其名称和源文件。`add_executable(<target> [<source>...])`
+
 ```bash
 # TODO 1: Set the minimum required version of CMake to be 3.10
 cmake_minimum_required(VERSION 3.10)
@@ -29,9 +34,6 @@ project(Tutorial)
 
 # TODO 3: Add an executable called Tutorial to the project
 add_executable(Tutorial tutorial.cxx)
-
-# project(<PROJECT-NAME> [LANGUAGES] [<language>...])
-# add_executable(<target> [<source>...])
 ```
 
 ```bash

@@ -17,3 +17,16 @@
 - **构建（`Build`）**: 调用底层构建工具（如 `make` 或 `ninja`）编译代码。
 
 ---
+
+## 二. 练习一
+
+```bash
+# TODO 1: Set the minimum required version of CMake to be 3.10
+cmake_minimum_required(VERSION 3.10)
+
+# TODO 2: Create a project named Tutorial
+project(Tutorial)
+
+# TODO 3: Add an executable called Tutorial to the project
+add_executable(Tutorial tutorial.cxx)
+```

@@ -30,3 +30,17 @@ project(Tutorial)
 # TODO 3: Add an executable called Tutorial to the project
 add_executable(Tutorial tutorial.cxx)
 ```
+
+```bash
+# 配置CMake项目
+cmake -G "MinGW Makefiles" ..
+# cmake: 调用CMake程序
+# -G "MinGW Makefiles": 指定生成器类型。告诉CMake使用MinGW的make工具来构建项目
+# ..: 指向CMakeLists.txt文件所在的源码目录（当前目录的上一级）
+
+cmake --build .
+# cmake --build .: 使用CMake的构建命令，自动选择合适的构建工具。.表示当前目录
+
+mingw32-make
+# mingw32-make: 直接调用MinGW提供的make工具（Windows上不能直接使用make命令）
+```

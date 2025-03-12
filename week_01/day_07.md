@@ -30,43 +30,29 @@ FD_SET(int fd, fd_set *set);   // 添加 fd 到集合
 FD_CLR(int fd, fd_set *set);   // 从集合中移除 fd
 FD_ISSET(int fd, fd_set *set); // 检查 fd 是否在集合中
 ```
-- `timeout`: 指定超时时间：
-
-c
-复制
+- `timeout`: 指定超时时间，若 `timeout = NULL` -> 阻塞直到事件发生。若 `timeval = {0, 0}` -> 非阻塞模式，立即返回。
+```c
 struct timeval {
     long tv_sec;   // 秒
     long tv_usec;  // 微秒
 };
-若 timeout = NULL：阻塞直到事件发生。
+```
 
-若 timeval = {0, 0}：非阻塞模式，立即返回。
+### 4. 返回值
+- 成功：返回就绪的文件描述符总数。
+- 超时：返回 `0`。
+- 错误：返回 `-1`，并设置 `errno`（如 `EINTR` 表示被信号中断）。
 
-4. 返回值
-成功：返回就绪的文件描述符总数。
-
-超时：返回 0。
-
-错误：返回 -1，并设置 errno（如 EINTR 表示被信号中断）。
-
-5. 文件描述符就绪条件
-5.1 可读 (readfds)
-接收缓冲区数据量 ≥ 低水位标记 SO_RCVLOWAT。
-
-对端关闭连接（read 返回 0）。
-
-监听套接字有新连接请求。
-
-套接字有未处理的错误。
-
-5.2 可写 (writefds)
-发送缓冲区可用空间 ≥ 低水位标记 SO_SNDLOWAT。
-
-写操作被关闭（触发 SIGPIPE）。
-
-非阻塞 connect 完成（成功或失败）。
-
-套接字有未处理的错误。
-
-5.3 异常 (exceptfds)
-仅当接收到 带外数据（OOB） 时触发。
+### 5. 文件描述符就绪条件
+5.1 可读 (`readfds`)
+- 接收缓冲区数据量 ≥ 低水位标记 `SO_RCVLOWAT`。
+- 对端关闭连接（`read` 返回 `0`）。
+- 监听套接字有新连接请求。
+- 套接字有未处理的错误。
+5.2 可写 (`writefds`)
+- 发送缓冲区可用空间 ≥ 低水位标记 `SO_SNDLOWAT`。
+- 写操作被关闭（触发 `SIGPIPE`）。
+- 非阻塞 `connect` 完成（成功或失败）。
+- 套接字有未处理的错误。
+5.3 异常 (`exceptfds`)
+- 仅当接收到 带外数据（`OOB`） 时触发。

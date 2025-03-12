@@ -82,6 +82,12 @@ int main()
     return 0;
 }
 ```
+
+- 适用场景：低并发、跨平台程序。
+- 核心步骤：
+  - 初始化 `fd_set` 并设置关注的文件描述符。
+  - 调用 `select` 等待事件。
+  - 使用 `FD_ISSET` 检查就绪的文件描述符。
 ---
 
 ## 二. `poll` 系统调用详解
@@ -140,3 +146,51 @@ fds[1].events = POLLIN;
 - 成功：返回就绪的文件描述符总数。
 - 超时：返回 `0`。
 - 错误：返回 `-1`，并设置 `errno`（如 `EINTR` 表示被信号中断）。
+
+```c
+#include <stdio.h>
+#include <poll.h>
+#include <unistd.h>
+
+int main() {
+    struct pollfd fds[2];
+    fds[0].fd = STDIN_FILENO;
+    fds[0].events = POLLIN;
+    fds[1].fd = sockfd;  // 假设 sockfd 是已建立的套接字
+    fds[1].events = POLLIN;
+
+    int timeout = 5000;  // 超时5秒
+
+    while (1) {
+        int ret = poll(fds, 2, timeout);
+        if (ret == -1) {
+            perror("poll error");
+            break;
+        } else if (ret == 0) {
+            printf("Timeout\n");
+            continue;
+        }
+
+        // 检查标准输入是否可读
+        if (fds[0].revents & POLLIN) {
+            char buf[1024];
+            ssize_t len = read(STDIN_FILENO, buf, sizeof(buf));
+            if (len > 0) {
+                printf("Input: %.*s", (int)len, buf);
+            }
+        }
+
+        // 检查套接字是否可读
+        if (fds[1].revents & POLLIN) {
+            // 处理套接字数据
+        }
+    }
+    return 0;
+}
+```
+
+- 适用场景：中等并发、需要处理较多文件描述符且跨平台兼容性要求不高的场景。
+- 核心步骤：
+  - 初始化 `pollfd` 数组，设置关注的事件。
+  - 调用 `poll` 等待事件。
+  - 遍历 `pollfd` 数组，检查 `revents` 处理就绪事件。

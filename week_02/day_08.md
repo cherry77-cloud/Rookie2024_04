@@ -48,3 +48,17 @@ mingw32-make
 # mingw32-make: 直接调用MinGW提供的make工具（Windows上不能直接使用make命令）
 ```
 ---
+
+## 三. 练习二
+```bash
+cmake_minimum_required(VERSION 3.10)
+project(Tutorial)
+
+# TODO 6: Set the variable CMAKE_CXX_STANDARD to 11
+#         and the variable CMAKE_CXX_STANDARD_REQUIRED to True
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+add_executable(Tutorial tutorial.cxx)
+```

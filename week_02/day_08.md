@@ -50,6 +50,10 @@ mingw32-make
 ---
 
 ## 三. 练习二
+- `set(CMAKE_CXX_STANDARD 11)`: 设置 `C++` 标准为 `C++11`。
+- `set(CMAKE_CXX_STANDARD_REQUIRED True)`: 强制要求编译器支持指定的 `C++` 标准
+- `_cplusplus` 是 `C++` 标准定义的宏，用于检测当前编译器使用的 `C++` 标准版本
+
 ```bash
 cmake_minimum_required(VERSION 3.10)
 project(Tutorial)
@@ -62,3 +66,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 configure_file(TutorialConfig.h.in TutorialConfig.h)
 add_executable(Tutorial tutorial.cxx)
 ```
+---

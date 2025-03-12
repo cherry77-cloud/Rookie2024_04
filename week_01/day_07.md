@@ -198,3 +198,16 @@ int main()
 
 ---
 
+## 三. `epoll` 系统调用详解
+
+### 1. 功能与用途
+`epoll` 是 Linux 特有的 **高性能 I/O 多路复用** 机制，用于高效管理大量文件描述符（如套接字）。相较于 `select` 和 `poll`，`epoll` 显著提升了高并发场景下的性能，适合构建 `Web` 服务器、实时通信系统等。
+
+### 2. `epoll_create` 创建 `epoll` 实例
+```c
+#include <sys/epoll.h>
+int epoll_create(int size);  // 返回 epoll 文件描述符（epfd）
+// 功能：创建一个内核事件表，用于存储用户关注的文件描述符和事件。
+// 参数：size 仅作历史兼容，可忽略（内核自动动态调整大小）。
+// 返回值：成功返回 epoll 文件描述符（epfd），失败返回 -1。
+```

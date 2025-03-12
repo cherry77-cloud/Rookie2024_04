@@ -206,8 +206,45 @@ int main()
 ### 2. `epoll_create` 创建 `epoll` 实例
 ```c
 #include <sys/epoll.h>
-int epoll_create(int size);  // 返回 epoll 文件描述符（epfd）
+int epoll_create(int size);
 // 功能：创建一个内核事件表，用于存储用户关注的文件描述符和事件。
 // 参数：size 仅作历史兼容，可忽略（内核自动动态调整大小）。
 // 返回值：成功返回 epoll 文件描述符（epfd），失败返回 -1。
+```
+
+### 3. `epoll_ctl` 管理事件表
+```c
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+// 功能：向事件表添加/修改/删除事件。
+// epfd：epoll_create 返回的文件描述符。
+// op：操作类型：
+//     EPOLL_CTL_ADD：注册新事件。
+//     EPOLL_CTL_MOD：修改已注册事件。
+//     EPOLL_CTL_DEL：删除事件。
+// fd：要操作的目标文件描述符。
+// event：事件配置（结构体 epoll_event）。
+```
+```c
+struct epoll_event {
+    uint32_t     events;   // 事件类型（EPOLLIN/EPOLLOUT/EPOLLERR 等）
+    epoll_data_t data;     // 用户数据（如关联的 fd）
+};
+
+typedef union epoll_data {
+    void    *ptr;         // 自定义指针
+    int      fd;          // 关联的文件描述符
+    uint32_t u32;
+    uint64_t u64;
+} epoll_data_t;
+```
+
+### 4. `epoll_wait` 等待事件
+```c
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+// 功能：阻塞等待注册的事件就绪。
+// epfd：epoll 实例的文件描述符。
+// events：输出参数，存储就绪事件的数组。
+// maxevents：events 数组的最大容量。
+// timeout：超时时间（毫秒），-1 表示阻塞，0 表示非阻塞。
+// 返回值：成功返回就绪事件数量，失败返回 -1。
 ```

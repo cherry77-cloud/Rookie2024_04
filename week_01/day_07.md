@@ -201,7 +201,7 @@ int main()
 ## 三. `epoll` 系统调用详解
 
 ### 1. 功能与用途
-`epoll` 是 Linux 特有的 **高性能 I/O 多路复用** 机制，用于高效管理大量文件描述符（如套接字）。相较于 `select` 和 `poll`，`epoll` 显著提升了高并发场景下的性能，适合构建 `Web` 服务器、实时通信系统等。
+`epoll` 是 `Linux` 特有的 **高性能 I/O 多路复用** 机制，用于高效管理大量文件描述符（如套接字）。相较于 `select` 和 `poll`，`epoll` 显著提升了高并发场景下的性能，适合构建 `Web` 服务器、实时通信系统等。
 
 ### 2. `epoll_create` 创建 `epoll` 实例
 ```c
@@ -251,15 +251,67 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 
 ### 5. 工作模式
 #### `LT`（电平触发，默认模式）
-- 行为：只要文件描述符处于就绪状态，每次 `epoll_wait` 都会通知应用程序。
-- 特点：类似 `select/poll`，适合简单场景，但可能重复触发事件。
+- 只要文件描述符处于就绪状态，每次 `epoll_wait` 都会通知应用程序。
+- 类似 `select/poll`，适合简单场景，但可能重复触发事件。
 
 #### `ET`（边沿触发）
-- 行为：仅在文件描述符状态 变化时 通知一次（如从不可读变为可读）。
+- 仅在文件描述符状态 变化时 通知一次（如从不可读变为可读）。
 - 必须一次性处理所有数据，否则可能丢失后续事件。
 - 文件描述符必须设为非阻塞模式，避免阻塞在未完成的 I/O 操作。
-- 启用方式：在 events 字段中设置 EPOLLET 标志。
+- 在 events 字段中设置 EPOLLET 标志。
 
-#### EPOLLONESHOT 事件
-- 行为：确保一个事件只被触发一次，需手动调用 epoll_ctl 重新注册。
-- 用途：避免多线程环境下同一文件描述符被多个线程处理。
+#### `EPOLLONESHOT` 事件
+- 确保一个事件只被触发一次，需手动调用 `epoll_ctl` 重新注册。
+- 避免多线程环境下同一文件描述符被多个线程处理。
+
+#### 性能优势
+- 回调机制：内核通过回调直接通知就绪事件，时间复杂度 `O(1)`。
+- 零拷贝：无需每次传递完整文件描述符集合，减少内存拷贝开销。
+- 无文件描述符数量限制（仅受系统资源约束）。
+- 支持 `ET` 模式、`EPOLLONESHOT`，优化事件处理逻辑。
+
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
+
+int main() {
+    int epfd = epoll_create1(0);
+    if (epfd == -1) {
+        perror("epoll_create1");
+        return 1;
+    }
+
+    struct epoll_event event;
+    event.events = EPOLLIN | EPOLLET;  // 监听可读事件 + ET 模式
+    event.data.fd = STDIN_FILENO;
+
+    if (epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event) == -1) {
+        perror("epoll_ctl");
+        return 1;
+    }
+
+    struct epoll_event events[10];
+    while (1) {
+        int n = epoll_wait(epfd, events, 10, -1); // 阻塞等待
+        if (n == -1) {
+            perror("epoll_wait");
+            break;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (events[i].data.fd == STDIN_FILENO) {
+                char buf[1024];
+                ssize_t len = read(STDIN_FILENO, buf, sizeof(buf));
+                if (len > 0) {
+                    printf("Input: %.*s", (int)len, buf);
+                }
+            }
+        }
+    }
+
+    close(epfd);
+    return 0;
+}
+```

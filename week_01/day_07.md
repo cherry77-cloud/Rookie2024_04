@@ -57,4 +57,29 @@ struct timeval {
 #### 异常 (`exceptfds`)
 - 仅当接收到 带外数据（`OOB`） 时触发。
 
+```c
+#include <stdio.h>
+#include <sys/select.h>
+
+int main()
+{
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(STDIN_FILENO, &read_fds);
+
+    struct timeval timeout = {5, 0}; // 超时5秒
+
+    int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
+    if (ret == -1) {
+        perror("select error");
+    } else if (ret == 0) {
+        printf("Timeout\n");
+    } else {
+        if (FD_ISSET(STDIN_FILENO, &read_fds)) {
+            printf("Input is readable\n");
+        }
+    }
+    return 0;
+}
+```
 ---

@@ -29,6 +29,9 @@ project(Tutorial)
 
 # TODO 3: Add an executable called Tutorial to the project
 add_executable(Tutorial tutorial.cxx)
+
+# project(<PROJECT-NAME> [LANGUAGES] [<language>...])
+# add_executable(<target> [<source>...])
 ```
 
 ```bash

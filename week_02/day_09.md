@@ -1,4 +1,6 @@
 ## 一. 添加自定义命令及用自定义命令生成文件
+
+### 1. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
 # 创建名为 MakeTable 的可执行文件，用于生成 Table.h 文件，MakeTable.cxx 是生成器的源代码，编译后将用于生成头文件
 add_executable(MakeTable MakeTable.cxx)
@@ -33,6 +35,7 @@ target_include_directories(MathFunctions
 )
 ```
 
+### 2. `mysqrt.cxx` 函数修改
 ```cpp
 double mysqrt(double x)
 {
@@ -51,3 +54,4 @@ double mysqrt(double x)
     return result;
 }
 ```
+---

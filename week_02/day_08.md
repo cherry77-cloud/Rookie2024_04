@@ -25,19 +25,41 @@
 - **`mingw32-make`**: 直接调用`MinGW`提供的`make`工具
 - **`_cplusplus`** 是 `C++` 标准定义的宏，用于检测当前编译器使用的 `C++` 标准版本
 
+### 1. 文件目录结构
+```txt
+├── CMakeLists.txt
+├── TutorialConfig.h.in
+└── tutorial.cxx
+```
+
+### 2. 主项目的`CMakeLists.txt`
 ```cmake
+# 指定 CMake 的最低版本要求为 3.10
 cmake_minimum_required(VERSION 3.10)
 
+# 定义项目名称为 "Tutorial"，并设置项目版本为 1.0
 project(Tutorial VERSION 1.0)
+
+# 设置 C++ 标准为 C++11
 set(CMAKE_CXX_STANDARD 11)
+
+# 要求必须支持指定的 C++ 标准（即 C++11），如果不支持则报错
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# 使用 configure_file 命令将模板文件 TutorialConfig.h.in 中的变量替换为实际值，
+# 并生成配置文件 TutorialConfig.h。这个文件通常用于在代码中访问 CMake 中定义的变量。
 configure_file(TutorialConfig.h.in TutorialConfig.h)
+
+# 添加一个可执行目标 "Tutorial"，其源文件为 tutorial.cxx
 add_executable(Tutorial tutorial.cxx)
 
+# 为可执行目标 "Tutorial" 添加包含目录，使得编译器能够找到生成的头文件 TutorialConfig.h。
+# ${PROJECT_BINARY_DIR} 是构建目录的路径，通常是 "build" 目录。
 target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
+```
 
-# 在TutorialConfig.h.in中编辑
+### 3. `TutorialConfig.h.in` 文件
+```c++
 #define Tutorial_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
 #define Tutorial_VERSION_MINOR @Tutorial_VERSION_MINOR@
 ```

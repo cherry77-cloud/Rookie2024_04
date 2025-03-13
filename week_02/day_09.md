@@ -87,3 +87,33 @@ cpack --config CPackSourceConfig.cmake   # 打包源代码
 ```
 
 ---
+
+## 三. 控制库的构建类型: `静态库 vs 动态库`
+### 1. 顶层 `CMakeLists.txt`
+```cmake
+# 在顶层 CMakeLists.txt 文件中，使用 option() 命令添加 BUILD_SHARED_LIBS 选项。该选项允许用户选择是否构建共享库（动态库）。
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+# 为了将生成的库文件和可执行文件输出到指定目录
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+```
+
+### 2. 更新头文件以支持动态库导出
+```cpp
+// 在 Windows 平台上，动态库需要显式导出符号。为此，更新 MathFunctions/MathFunctions.h 文件，使用 __declspec(dllexport) 和 __declspec(dllimport) 定义导出符号
+#if defined(_WIN32)
+#  if defined(EXPORTING_MYMATH)
+#    define DECLSPEC __declspec(dllexport)  // 导出符号
+#  else
+#    define DECLSPEC __declspec(dllimport)  // 导入符号
+#  endif
+#else // 非 Windows 平台
+#  define DECLSPEC  // 非 Windows 平台不需要特殊处理
+#endif
+
+namespace mathfunctions {
+    double DECLSPEC sqrt(double x);  // 声明导出函数
+}
+```

@@ -8,3 +8,5 @@
 - [`day_07` I/O多路复用](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_01/day_07.md) ✅
 
 ---
+## `week_02`
+- [`day_08` CMake 上](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_08.md) ✅

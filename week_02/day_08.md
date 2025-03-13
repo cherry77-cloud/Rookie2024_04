@@ -306,7 +306,7 @@ install(FILES MathFunctions.h DESTINATION include)
 ```
 ---
 
-七. 安装与测试
+## 七. 安装与测试
 - **`include(CTest)`**：启用测试功能，并支持高级测试模式。
 - **`ctest -VV -D Experimental`**：运行测试并生成详细日志。
 - 生成 `Makefile` 并测试的流程：

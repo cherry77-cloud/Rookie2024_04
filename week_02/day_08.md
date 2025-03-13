@@ -156,21 +156,8 @@ endif ()
 ---
 
 ## 四. 为库添加使用依赖
-#### 1. 文件目录结构
-```txt
-├── MathFunctions/                        # 数学函数库源码
-│   ├── CMakeLists.txt                    # 数学函数库的CMake构建脚本
-│   ├── MathFunctions.cxx                 # 数学函数实现
-│   ├── MathFunctions.h                   # 数学函数头文件
-│   ├── mysqrt.cxx                        # 自定义平方根函数实现
-│   └── mysqrt.h                          # 自定义平方根函数头文件
-│
-├── CMakeLists.txt                        # 主CMake构建脚本
-├── tutorial.cxx                          # 主程序源码
-└── TutorialConfig.h.in                   # 配置头文件模板
-```
 
-#### 2. 主项目的`CMakeLists.txt`
+### 1. 主项目的`CMakeLists.txt`
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 project(Tutorial VERSION 1.0)
@@ -189,7 +176,7 @@ target_link_libraries(Tutorial PUBLIC MathFunctions)
 target_include_directories(Tutorial PUBLIC "${PROJECT_BINARY_DIR}")
 ```
 
-### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
+### 2. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
 add_library(MathFunctions MathFunctions.cxx)
 target_include_directories(MathFunctions INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -207,3 +194,35 @@ target_link_libraries(MathFunctions PRIVATE tutorial_compiler_flags)
 ```
 
 ---
+
+## 五. 生成器表达式
+```cmake
+# 指定 CMake 的最低版本要求为 3.15，确保可以使用生成器表达式
+cmake_minimum_required(VERSION 3.15)
+project(Tutorial VERSION 1.0)
+add_library(tutorial_compiler_flags INTERFACE)
+target_compile_features(tutorial_compiler_flags INTERFACE cxx_std_11)
+
+# 定义生成器表达式变量，用于检测编译器类型
+set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
+set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
+
+# 为接口库添加编译器选项, 使用生成器表达式根据编译器类型设置不同的编译选项
+target_compile_options(tutorial_compiler_flags INTERFACE
+    # 对于类 GCC 的编译器，启用以下警告选项：
+        # -Wall：启用所有常见警告
+        # -Wextra：启用额外警告
+        # -Wshadow：警告变量遮蔽
+        # -Wformat=2：检查格式化字符串的安全性
+        # -Wunused：警告未使用的变量或函数
+    "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+    # 对于 MSVC 编译器，启用警告级别 3（-W3）
+    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
+)
+
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+add_subdirectory(MathFunctions)
+add_executable(Tutorial tutorial.cxx)
+target_link_libraries(Tutorial PUBLIC MathFunctions tutorial_compiler_flags)
+target_include_directories(Tutorial PUBLIC "${PROJECT_BINARY_DIR}")
+```

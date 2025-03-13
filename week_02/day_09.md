@@ -443,3 +443,125 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 cpack --config MultiCPackConfig.cmake
 ```
+---
+## 六. `CMake 框架`
+```cmake
+# ======================== 基础配置 ========================
+cmake_minimum_required(VERSION 3.15)  # 指定 CMake 最低版本
+project(MyProject VERSION 1.0.0 LANGUAGES CXX)  # 定义项目名称和版本
+
+# ======================== 全局变量设置 ========================
+set(CMAKE_DEBUG_POSTFIX "d")  # Debug 版本后缀（如 libMyLibd.so）
+set(CMAKE_CXX_STANDARD 17)     # 全局 C++ 标准
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ======================== 编译器选项 ========================
+# 创建接口库统一管理编译器选项
+add_library(project_compiler_flags INTERFACE)
+
+# C++ 标准
+target_compile_features(project_compiler_flags INTERFACE cxx_std_17)
+
+# 警告选项
+if(MSVC)
+  target_compile_options(project_compiler_flags INTERFACE /W4 /WX)
+else()
+  target_compile_options(project_compiler_flags INTERFACE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# 生成器表达式区分构建和安装路径
+target_include_directories(project_compiler_flags INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# ======================== 构建目标 ========================
+# 添加子目录（如库、模块）
+add_subdirectory(src)
+
+# 主可执行文件
+add_executable(${PROJECT_NAME} main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+  project_compiler_flags 
+  MyLibrary
+)
+
+# ======================== 安装规则 ========================
+# 安装可执行文件
+install(TARGETS ${PROJECT_NAME} 
+  DESTINATION bin
+)
+
+# 安装库
+install(TARGETS MyLibrary
+  EXPORT MyLibraryTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# 安装头文件
+install(DIRECTORY include/ 
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.h"
+)
+
+# 安装导出目标
+install(EXPORT MyLibraryTargets
+  FILE MyLibraryTargets.cmake
+  DESTINATION lib/cmake/MyLibrary
+)
+
+# ======================== 测试支持 ========================
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
+# ======================== 打包支持 ========================
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_VENDOR "MyCompany")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_GENERATOR "TGZ;ZIP")
+include(CPack)
+
+# ======================== 生成配置文件 ========================
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/MyLibraryConfig.cmake
+  INSTALL_DESTINATION lib/cmake/MyLibrary
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/MyLibraryConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/MyLibraryConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/MyLibraryConfigVersion.cmake
+  DESTINATION lib/cmake/MyLibrary
+)
+
+# ======================== 跨平台 RPATH 设置 ========================
+if(UNIX AND NOT APPLE)
+  set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+elseif(APPLE)
+  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+endif()
+
+# ======================== 可选：文档生成 ========================
+option(BUILD_DOC "Build documentation" OFF)
+if(BUILD_DOC)
+  find_package(Doxygen REQUIRED)
+  add_custom_target(doc
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation"
+  )
+endif()
+```

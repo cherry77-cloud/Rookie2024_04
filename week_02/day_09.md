@@ -55,3 +55,35 @@ double mysqrt(double x)
 }
 ```
 ---
+
+## 二. 打包安装程序
+### 1. 在顶层 `CMakelists.txt` 的底部中添加以下代码
+```cmake
+# 包含安装系统运行时库的模块（确保程序依赖的库被打包）
+include(InstallRequiredSystemLibraries)
+
+# 设置许可证文件路径
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+
+# 设置版本号（从项目版本继承）
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")  # 例如 Tutorial_VERSION_MAJOR
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")  # 例如 Tutorial_VERSION_MINOR
+
+# 设置源代码打包格式（可选，生成源代码包时使用）
+set(CPACK_SOURCE_GENERATOR "TGZ")  # 支持 TGZ、ZIP、7Z 等
+
+# 包含 CPack 模块（必须放在所有 CPACK_* 变量设置之后）
+include(CPack)
+```
+
+### 2. `cpack`命令
+```bash
+cpack -G ZIP                             # 打包为 ZIP 格式
+cpack -G NSIS                            # 打包为 NSIS 安装包（Windows 默认）
+cpack -G TGZ                             # 打包为 TGZ 格式（Linux/macOS）
+cpack -C Debug                           # 打包 Debug 版本
+cpack -C Release                         # 打包 Release 版本
+cpack --config CPackSourceConfig.cmake   # 打包源代码
+```
+
+---

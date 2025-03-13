@@ -128,7 +128,7 @@ if (USE_MYMATH)
 endif ()
 ```
 
-### 3. 代码中的条件编译
+### 4. 代码中的条件编译
 
 ```c++
 // MathFunctions.cxx
@@ -153,4 +153,57 @@ endif ()
   const double outputValue = std::sqrt(inputValue);
 #endif
 ```
+---
+
+## 四. 为库添加使用依赖
+#### 1. 文件目录结构
+```txt
+├── MathFunctions/                        # 数学函数库源码
+│   ├── CMakeLists.txt                    # 数学函数库的CMake构建脚本
+│   ├── MathFunctions.cxx                 # 数学函数实现
+│   ├── MathFunctions.h                   # 数学函数头文件
+│   ├── mysqrt.cxx                        # 自定义平方根函数实现
+│   └── mysqrt.h                          # 自定义平方根函数头文件
+│
+├── CMakeLists.txt                        # 主CMake构建脚本
+├── tutorial.cxx                          # 主程序源码
+└── TutorialConfig.h.in                   # 配置头文件模板
+```
+
+#### 2. 主项目的`CMakeLists.txt`
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(Tutorial VERSION 1.0)
+
+# 创建一个接口库目标 tutorial_compiler_flags，用于统一管理编译选项，接口库不生成实际代码，仅用于传递编译特性（如 C++ 标准）
+add_library(tutorial_compiler_flags INTERFACE)
+
+# 为接口库添加 C++11 标准要求，通过 INTERFACE 关键字传递给依赖它的目标， 所有链接此库的目标会自动启用 C++11
+target_compile_features(tutorial_compiler_flags INTERFACE cxx_std_11)
+
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+add_subdirectory(MathFunctions)
+add_executable(Tutorial tutorial.cxx)
+target_link_libraries(Tutorial PRIVATE tutorial_compiler_flags)
+target_link_libraries(Tutorial PUBLIC MathFunctions)
+target_include_directories(Tutorial PUBLIC "${PROJECT_BINARY_DIR}")
+```
+
+### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
+```cmake
+add_library(MathFunctions MathFunctions.cxx)
+target_include_directories(MathFunctions INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+option(USE_MYMATH "Use tutorial provided math implementation" ON)
+
+if (USE_MYMATH)
+    target_compile_definitions(MathFunctions PRIVATE "USE_MYMATH")
+    add_library(SqrtLibrary STATIC mysqrt.cxx)
+    target_link_libraries(SqrtLibrary PRIVATE tutorial_compiler_flags)
+    target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
+endif()
+
+target_link_libraries(MathFunctions PRIVATE tutorial_compiler_flags)
+```
+
 ---

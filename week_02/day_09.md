@@ -102,7 +102,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 ### 2. 更新头文件以支持动态库导出
 ```cpp
-// 在 Windows 平台上，动态库需要显式导出符号。为此，更新 MathFunctions/MathFunctions.h 文件，使用 __declspec(dllexport) 和 __declspec(dllimport) 定义导出符号
+// 在 Windows 平台上，动态库需要显式导出符号。为此，更新 MathFunctions/MathFunctions.h 文件，
+// 使用 __declspec(dllexport) 和 __declspec(dllimport) 定义导出符号
 #if defined(_WIN32)
 #  if defined(EXPORTING_MYMATH)
 #    define DECLSPEC __declspec(dllexport)  // 导出符号
@@ -117,3 +118,23 @@ namespace mathfunctions {
     double DECLSPEC sqrt(double x);  // 声明导出函数
 }
 ```
+
+### 3. 设置位置无关代码, 定义导出符号, `MathFunctions/CMakeLists.txt`文件
+```cmake
+# 定义 EXPORTING_MYMATH 符号
+target_compile_definitions(MathFunctions PRIVATE "EXPORTING_MYMATH")
+
+include(MakeTable.cmake)
+add_library(SqrtLibrary STATIC mysqrt.cxx ${CMAKE_CURRENT_BINARY_DIR}/Table.h)
+              
+# 设置 SqrtLibrary 的位置无关代码属性
+set_target_properties(SqrtLibrary PROPERTIES
+    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+)
+```
+
+- 通过 `BUILD_SHARED_LIBS` 变量，可以灵活控制库的构建类型（静态库或动态库）。
+- 在 `Windows` 平台上，需要使用 `__declspec(dllexport)` 和 `__declspec(dllimport)` 导出和导入符号。
+- 通过设置 `POSITION_INDEPENDENT_CODE` 属性，确保静态库与共享库兼容。
+
+---

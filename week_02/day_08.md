@@ -114,7 +114,7 @@ target_include_directories(Tutorial PUBLIC
 ```
 
 ### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
-```bash
+```cmake
 # 创建名为 MathFunctions 的静态库，仅包含 MathFunctions.cxx 源文件
 add_library(MathFunctions MathFunctions.cxx)
 

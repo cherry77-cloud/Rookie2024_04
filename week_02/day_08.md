@@ -36,9 +36,6 @@ project(Tutorial VERSION 1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)  # 强制要求使用C++11
 
-# 设置一个字符串变量，内容为"Hello World"
-set(STR_TEST "Hello World")
-
 # 使用configure_file将TutorialConfig.h.in文件配置并复制为TutorialConfig.h
 # 该步骤会将TutorialConfig.h.in中的占位符（如@Tutorial_VERSION_MAJOR@）替换为实际值
 configure_file(TutorialConfig.h.in TutorialConfig.h)
@@ -49,17 +46,10 @@ add_executable(Tutorial tutorial.cxx)
 # 使用target_include_directories将${PROJECT_BINARY_DIR}添加到头文件搜索路径中
 # 这样编译器可以找到生成的TutorialConfig.h文件
 target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
-
-# 打印一些调试信息
-message(STATUS "二进制目录: ${PROJECT_BINARY_DIR}")
-message(STATUS "主版本号: ${Tutorial_VERSION_MAJOR}")
-message(STATUS "次版本号: ${Tutorial_VERSION_MINOR}")
-message(STATUS "测试字符串: ${STR_TEST}")
 ```
 
 ```c++
 #define Tutorial_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
 #define Tutorial_VERSION_MINOR @Tutorial_VERSION_MINOR@
-#define STR_TEST "@STR_TEST@"
 ```
 ---

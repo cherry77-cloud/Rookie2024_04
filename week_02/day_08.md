@@ -231,14 +231,14 @@ target_include_directories(Tutorial PUBLIC "${PROJECT_BINARY_DIR}")
 ## 六. 安装与测试
 - **`add_custom_target`** 用于定义一个自定义目标，该目标可以执行一些与构建过程相关的任务（例如生成文档、运行脚本、打包发布文件等）。自定义目标不会直接参与构建过程，但可以通过 `cmake --build . --target 目标名称` 显式调用。
 - **`message`** 用于在 `CMake` 配置或构建过程中输出信息。它可以用于调试、提示用户或记录日志。
-- **`cmake -DCMAKE_INSTALL_PREFIX="../install" ..`**:  `DCMAKE_INSTALL_PREFIX` 是 `CMake` 的一个命令行选项，用于指定安装路径。
+- **`cmake -DCMAKE_INSTALL_PREFIX="../install" ..`**:  指定安装路径。
 - **`ctest`** 是 `CMake` 的测试工具，用于运行项目中定义的测试用例。
-  - --output-on-failure：在测试失败时输出详细信息。
-  - -R <正则表达式>：运行名称匹配正则表达式的测试。
-  - -E <正则表达式>：排除名称匹配正则表达式的测试。
-  - -j <数量>：并行运行测试（指定线程数）。
-  - -V 或 --verbose：显示详细输出。
-  - -N：仅列出测试，不运行。
+  - `--output-on-failure`：在测试失败时输出详细信息。
+  - `-R <正则表达式>`：运行名称匹配正则表达式的测试。
+  - `-E <正则表达式>`：排除名称匹配正则表达式的测试。
+  - `-j <数量>`：并行运行测试（指定线程数）。
+  - `-V 或 --verbose`：显示详细输出。
+  - `-N`：仅列出测试，不运行。
 ### 1. 主项目的`CMakeLists.txt`
 ```cmake
 cmake_minimum_required(VERSION 3.15)
@@ -304,3 +304,4 @@ set(installable_libs MathFunctions tutorial_compiler_flags)
 install(TARGETS ${installable_libs} DESTINATION lib)
 install(FILES MathFunctions.h DESTINATION include)
 ```
+---

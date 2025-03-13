@@ -20,12 +20,39 @@
 
 ## 二. 练习一
 
-- **`cmake_minimum_required`**: 指定 `CMake` 的最低版本要求，确保项目使用的 `CMake` 功能与版本兼容。
-- **`project`**: 定义项目名称，并隐式启用默认编程语言（`C/C++`）。设置变量 `PROJECT_NAME` 为项目名称。自动检测系统默认的 `C/C++` 编译器。`project(<PROJECT-NAME> [LANGUAGES] [<language>...])`
-- **`add_executable`**: 生成一个可执行文件目标，指定其名称和源文件。`add_executable(<target> [<source>...])`
 - **`cmake -G "MinGW Makefiles" ..`**: 调用`CMake`程序, 指定生成器类型。告诉`CMake`使用`MinGW`的`make`工具来构建项目, 指向`CMakeLists.txt`文件所在的源码目录（当前目录的上一级）
 - **`cmake --build .`**: 使用`CMake`的构建命令，自动选择合适的构建工具。`.`表示当前目录
 - **`mingw32-make`**: 直接调用`MinGW`提供的`make`工具
-- **`set(CMAKE_CXX_STANDARD 11)`**: 设置 `C++` 标准为 `C++11`。
-- **`set(CMAKE_CXX_STANDARD_REQUIRED True)`**: 强制要求编译器支持指定的 `C++` 标准
 - **`_cplusplus`** 是 `C++` 标准定义的宏，用于检测当前编译器使用的 `C++` 标准版本
+
+```cmake
+# 设置CMake的最低版本要求为3.10
+cmake_minimum_required(VERSION 3.10)
+
+# 创建一个名为Tutorial的项目, 在项目命令中设置项目版本号为1.0
+project(Tutorial VERSION 1.0)
+
+# 设置C++标准为11，并强制要求使用C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)  # 强制要求使用C++11
+
+# 设置一个字符串变量，内容为"Hello World"
+set(STR_TEST "Hello World")
+
+# 使用configure_file将TutorialConfig.h.in文件配置并复制为TutorialConfig.h
+# 该步骤会将TutorialConfig.h.in中的占位符（如@Tutorial_VERSION_MAJOR@）替换为实际值
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+
+# 添加一个名为Tutorial的可执行文件，源文件为tutorial.cxx
+add_executable(Tutorial tutorial.cxx)
+
+# 使用target_include_directories将${PROJECT_BINARY_DIR}添加到头文件搜索路径中
+# 这样编译器可以找到生成的TutorialConfig.h文件
+target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
+
+# 打印一些调试信息
+message(STATUS "二进制目录: ${PROJECT_BINARY_DIR}")
+message(STATUS "主版本号: ${Tutorial_VERSION_MAJOR}")
+message(STATUS "次版本号: ${Tutorial_VERSION_MINOR}")
+message(STATUS "测试字符串: ${STR_TEST}")
+```

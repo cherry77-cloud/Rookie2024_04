@@ -25,7 +25,7 @@
 - **`add_executable`**: 生成一个可执行文件目标，指定其名称和源文件。`add_executable(<target> [<source>...])`
 - **`cmake -G "MinGW Makefiles" ..`**: 调用`CMake`程序, 指定生成器类型。告诉`CMake`使用`MinGW`的`make`工具来构建项目, 指向`CMakeLists.txt`文件所在的源码目录（当前目录的上一级）
 - **`cmake --build .`**: 使用`CMake`的构建命令，自动选择合适的构建工具。`.`表示当前目录
-- **`mingw32-make`**: 直接调用`MinGW`提供的`make`工具（`Windows`上不能直接使用`make`命令）
+- **`mingw32-make`**: 直接调用`MinGW`提供的`make`工具
 - **`set(CMAKE_CXX_STANDARD 11)`**: 设置 `C++` 标准为 `C++11`。
 - **`set(CMAKE_CXX_STANDARD_REQUIRED True)`**: 强制要求编译器支持指定的 `C++` 标准
 - **`_cplusplus`** 是 `C++` 标准定义的宏，用于检测当前编译器使用的 `C++` 标准版本

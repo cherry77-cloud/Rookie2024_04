@@ -119,7 +119,7 @@ namespace mathfunctions {
 }
 ```
 
-### 3. 设置位置无关代码, 定义导出符号, `MathFunctions/CMakeLists.txt`文件
+### 3. 设置位置无关代码, 定义导出符号, `MathFunctions/CMakeLists.txt`
 ```cmake
 # 定义 EXPORTING_MYMATH 符号
 target_compile_definitions(MathFunctions PRIVATE "EXPORTING_MYMATH")
@@ -137,4 +137,74 @@ set_target_properties(SqrtLibrary PROPERTIES
 - 在 `Windows` 平台上，需要使用 `__declspec(dllexport)` 和 `__declspec(dllimport)` 导出和导入符号。
 - 通过设置 `POSITION_INDEPENDENT_CODE` 属性，确保静态库与共享库兼容。
 
+---
+
+## 四. 添加导出配置
+### 1. 顶层 `CMakeLists.txt`
+```cmake
+# 安装导出文件
+install(EXPORT MathFunctionsTargets
+  FILE MathFunctionsTargets.cmake
+  DESTINATION lib/cmake/MathFunctions
+)
+
+include(CMakePackageConfigHelpers)
+
+# 生成MathFunctionsConfig.cmake
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/MathFunctionsConfig.cmake"
+  INSTALL_DESTINATION "lib/cmake/MathFunctions"
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+# 生成版本配置文件
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/MathFunctionsConfigVersion.cmake"
+  VERSION "${Tutorial_VERSION_MAJOR}.${Tutorial_VERSION_MINOR}"
+  COMPATIBILITY AnyNewerVersion
+)
+
+# 安装配置文件
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/MathFunctionsConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/MathFunctionsConfigVersion.cmake
+  DESTINATION lib/cmake/MathFunctions
+)
+
+# 支持从构建目录直接引用
+export(EXPORT MathFunctionsTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/MathFunctionsTargets.cmake"
+)
+```
+
+### 2. `MathFunctions/CMakeLists.txt`
+```cmake
+# 在 add_library(MathFunctions MathFunctions.cxx) 下面添加，处理路径兼容性
+target_include_directories(MathFunctions INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+
+# 更新安装命令以导出目标，在底部添加
+set(installable_libs MathFunctions tutorial_compiler_flags)
+if(TARGET SqrtLibrary)
+  list(APPEND installable_libs SqrtLibrary)
+endif()
+
+install(TARGETS ${installable_libs}
+        EXPORT MathFunctionsTargets
+        DESTINATION lib
+)
+
+install(FILES MathFunctions.h DESTINATION include)
+```
+
+### 3. 在项目根目录创建 `Config.cmake.in`
+```cmake
+@PACKAGE_INIT@  # 将被替换为路径处理代码
+
+include("${CMAKE_CURRENT_LIST_DIR}/MathFunctionsTargets.cmake")  # 包含导出的目标
+```
 ---

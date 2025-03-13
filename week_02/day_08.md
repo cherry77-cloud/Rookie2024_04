@@ -56,3 +56,10 @@ message(STATUS "主版本号: ${Tutorial_VERSION_MAJOR}")
 message(STATUS "次版本号: ${Tutorial_VERSION_MINOR}")
 message(STATUS "测试字符串: ${STR_TEST}")
 ```
+
+```c++
+#define Tutorial_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
+#define Tutorial_VERSION_MINOR @Tutorial_VERSION_MINOR@
+#define STR_TEST "@STR_TEST@"
+```
+---

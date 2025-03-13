@@ -10,3 +10,4 @@
 ---
 ## `week_02`
 - [`day_08` CMake 上](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_08.md) ✅
+- [`day_09` CMake 下](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_09.md) ✅

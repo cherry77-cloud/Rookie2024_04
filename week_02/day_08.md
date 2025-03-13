@@ -26,30 +26,20 @@
 - **`_cplusplus`** 是 `C++` 标准定义的宏，用于检测当前编译器使用的 `C++` 标准版本
 
 ```cmake
-# 设置CMake的最低版本要求为3.10
 cmake_minimum_required(VERSION 3.10)
 
-# 创建一个名为Tutorial的项目, 在项目命令中设置项目版本号为1.0
 project(Tutorial VERSION 1.0)
-
-# 设置C++标准为11，并强制要求使用C++11
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)  # 强制要求使用C++11
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# 使用configure_file将TutorialConfig.h.in文件配置并复制为TutorialConfig.h
-# 该步骤会将TutorialConfig.h.in中的占位符（如@Tutorial_VERSION_MAJOR@）替换为实际值
 configure_file(TutorialConfig.h.in TutorialConfig.h)
-
-# 添加一个名为Tutorial的可执行文件，源文件为tutorial.cxx
 add_executable(Tutorial tutorial.cxx)
 
-# 使用target_include_directories将${PROJECT_BINARY_DIR}添加到头文件搜索路径中
-# 这样编译器可以找到生成的TutorialConfig.h文件
 target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
-```
 
-```c++
+# 在TutorialConfig.h.in中编辑
 #define Tutorial_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
 #define Tutorial_VERSION_MINOR @Tutorial_VERSION_MINOR@
 ```
+
 ---

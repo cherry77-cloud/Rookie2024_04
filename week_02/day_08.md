@@ -43,3 +43,61 @@ target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
 ```
 
 ---
+
+## 三. 创建库文件和库文件可选编译
+### 顶层CMakeLists.txt内容
+```bash
+# 设置 CMake 最低版本要求
+cmake_minimum_required(VERSION 3.10)
+
+# 定义项目名称和版本号
+project(Tutorial VERSION 1.0)
+
+# 配置 C++ 标准为 C++11，并强制要求编译器支持该标准
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# 定义一个选项 USE_MYMATH，用于控制是否使用自定义数学库
+# 默认值为 ON (启用)，描述信息会在 CMake GUI 中显示
+option(USE_MYMATH "Use tutorial provided math implementation" ON)
+
+# 生成配置文件 TutorialConfig.h，将 CMake 变量注入到代码中
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+
+# 如果用户选择使用自定义数学库
+if (USE_MYMATH)
+    # 添加子目录 MathFunctions，该目录应包含另一个 CMakeLists.txt
+    add_subdirectory(MathFunctions)
+    # 将 MathFunctions 库添加到额外链接库列表
+    list(APPEND EXTRA_LIBS MathFunctions)
+    # 将自定义数学库的头文件目录添加到额外包含目录列表
+    list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/MathFunctions")
+endif ()
+
+# 创建可执行文件 Tutorial，源文件为 tutorial.cxx
+add_executable(Tutorial tutorial.cxx)
+
+# 为可执行文件链接需要的库
+target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS})
+
+# 为可执行文件添加头文件包含目录
+target_include_directories(Tutorial PUBLIC
+    "${PROJECT_BINARY_DIR}"                # 包含生成的 TutorialConfig.h
+    "${PROJECT_SOURCE_DIR}/MathFunctions"  # 包含自定义数学库头文件
+)
+```
+
+### 内层CMakeLists.txt内容
+```bash
+# 创建名为 MathFunctions 的静态库，仅包含 MathFunctions.cxx 源文件
+add_library(MathFunctions MathFunctions.cxx)
+
+if (USE_MYMATH)
+    # 为 MathFunctions 库添加私有编译定义 USE_MYMATH, PRIVATE 表示此定义仅作用于该库本身，不会传递给链接它的其他目标
+    target_compile_definitions(MathFunctions PRIVATE USE_MYMATH)
+    # 创建名为 SqrtLibrary 的静态库，包含 mysqrt.cxx 源文件, STATIC 表示生成静态库（.a/.lib）
+    add_library(SqrtLibrary STATIC mysqrt.cxx)
+    # 将 SqrtLibrary 作为私有依赖链接到 MathFunctions, PRIVATE 表示依赖关系仅作用于 MathFunctions，不会向上层传递
+    target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
+endif ()
+```

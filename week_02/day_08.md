@@ -45,7 +45,7 @@ target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
 ---
 
 ## 三. 创建库文件和库文件可选编译
-### 顶层CMakeLists.txt内容
+### 顶层`CMakeLists.txt`内容
 ```bash
 # 设置 CMake 最低版本要求
 cmake_minimum_required(VERSION 3.10)
@@ -87,7 +87,7 @@ target_include_directories(Tutorial PUBLIC
 )
 ```
 
-### 内层CMakeLists.txt内容
+### 内层`CMakeLists.txt`内容
 ```bash
 # 创建名为 MathFunctions 的静态库，仅包含 MathFunctions.cxx 源文件
 add_library(MathFunctions MathFunctions.cxx)
@@ -101,3 +101,31 @@ if (USE_MYMATH)
     target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
 endif ()
 ```
+
+### 其他文件修改
+```c++
+// TutorialConfig.h.in 文件
+#define Tutorial_VERSION_MAJOR "@Tutorial_VERSION_MAJOR@"
+#define Tutorial_VERSION_MINOR "@Tutorial_VERSION_MINOR@"
+#cmakedefine USE_MYMATH
+
+// tutorial.cxx 文件
+#ifdef USE_MYMATH
+#include "MathFunctions.h"
+#endif
+
+#ifdef USE_MYMATH
+  const double outputValue = mathfunctions::sqrt(inputValue);
+#else
+  const double outputValue = std::sqrt(inputValue);
+#endif
+
+// MathFunctions.cxx 文件
+#ifdef USE_MYMATH
+    return detail::mysqrt(x);
+#else
+    return std::sqrt(x);
+#endif
+```
+
+---

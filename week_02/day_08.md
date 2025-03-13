@@ -61,18 +61,13 @@ project/
 
 ### 2. 主项目的`CMakeLists.txt`
 ```cmake
-cmake_minimum_required(VERSION 3.10)  # 设置 CMake 最低版本要求
-project(Tutorial VERSION 1.0)  # 定义项目名称和版本号
+cmake_minimum_required(VERSION 3.10)
+project(Tutorial VERSION 1.0)
 
-# 设置 C++ 标准为 C++11，并强制要求编译器支持该标准
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# 定义一个选项 USE_MYMATH，用于控制是否使用自定义数学库
-# 默认值为 ON (启用)，描述信息会在 CMake GUI 中显示
 option(USE_MYMATH "Use tutorial provided math implementation" ON)
-
-# 生成配置文件 TutorialConfig.h，将 CMake 变量注入到代码中
 configure_file(TutorialConfig.h.in TutorialConfig.h)
 
 # 如果用户选择使用自定义数学库
@@ -87,10 +82,7 @@ if (USE_MYMATH)
     list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/MathFunctions")
 endif ()
 
-# 创建可执行文件 Tutorial，源文件为 tutorial.cxx
 add_executable(Tutorial tutorial.cxx)
-
-# 为可执行文件链接需要的库
 target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS})
 
 # 为可执行文件添加头文件包含目录

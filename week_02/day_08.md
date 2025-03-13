@@ -70,7 +70,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 option(USE_MYMATH "Use tutorial provided math implementation" ON)
 configure_file(TutorialConfig.h.in TutorialConfig.h)
 
-# 如果用户选择使用自定义数学库
 if (USE_MYMATH)
     # 添加子目录 MathFunctions，该目录应包含另一个 CMakeLists.txt
     add_subdirectory(MathFunctions)

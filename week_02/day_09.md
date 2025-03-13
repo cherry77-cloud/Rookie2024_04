@@ -85,7 +85,7 @@ cpack --config CPackSourceConfig.cmake   # 打包源代码
 
 ---
 
-## 三. 控制库的构建类型: `静态库 vs 动态库`
+## 三. 控制库的构建类型
 ### 1. 顶层 `CMakeLists.txt`
 ```cmake
 # 在顶层 CMakeLists.txt 文件中，使用 option() 命令添加 BUILD_SHARED_LIBS 选项。该选项允许用户选择是否构建共享库（动态库）。

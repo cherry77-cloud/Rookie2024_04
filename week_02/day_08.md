@@ -315,3 +315,69 @@ install(FILES MathFunctions.h DESTINATION include)
   - 使用 `ctest -VV -D Experimental` 运行测试。
   - `https://my.cdash.org/index.php?project=CMakeTutorial`, 可以查看测试结果
 ---
+
+## 八. 添加系统特性检查
+### 1. 子模块 `MathFunctions` 的 `CMakeLists.txt`
+```cmake
+add_library(MathFunctions MathFunctions.cxx)
+target_include_directories(MathFunctionsINTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+option(USE_MYMATH "Use tutorial provided math implementation" ON)
+
+if (USE_MYMATH)
+    target_compile_definitions(MathFunctions PRIVATE "USE_MYMATH")
+    add_library(SqrtLibrary STATIC mysqrt.cxx)
+    target_link_libraries(SqrtLibrary PUBLIC tutorial_compiler_flags)
+    include(CheckCXXSourceCompiles)
+
+    check_cxx_source_compiles("
+        #include <cmath>
+        int main() {
+          std::log(1.0);
+          return 0;
+        } " HAVE_LOG)
+
+    check_cxx_source_compiles("
+        #include <cmath>
+        int main() {
+          std::exp(1.0);
+          return 0;
+        } " HAVE_EXP)
+
+  if (HAVE_LOG)
+      target_compile_definitions(SqrtLibrary PRIVATE "HAVE_LOG")
+  endif()
+  
+  if (HAVE_EXP)
+      target_compile_definitions(SqrtLibrary PRIVATE "HAVE_EXP")
+  endif()
+
+  target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
+endif ()
+
+
+target_link_libraries(MathFunctions PUBLIC tutorial_compiler_flags)
+set(installable_libs MathFunctions tutorial_compiler_flags)
+if (TARGET SqrtLibrary)
+    list(APPEND installable_libs SqrtLibrary)
+endif ()
+install(TARGETS ${installable_libs} DESTINATION lib)
+install(FILES MathFunctions.h DESTINATION include)
+```
+
+### 2. 条件预编译
+```c++
+#if defined(HAVE_LOG) && defined(HAVE_EXP)
+    double result = std::exp(std::log(x) * 0.5);
+    std::cout << "Computing sqrt of " << x << " to be " << result << " using log and exp" << std::endl;
+#else
+    double result = x;
+    for (int i = 0; i < 10; ++i) {
+        if (result <= 0) {
+            result = 0.1;
+        }
+        double delta = x - (result * result);
+        result = result + 0.5 * delta / result;
+        std::cout << "Computing sqrt of " << x << " to be " << result << std::endl;
+    }
+#endif
+```

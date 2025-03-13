@@ -45,15 +45,26 @@ target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
 ---
 
 ## 三. 创建库文件和库文件可选编译
-### 顶层`CMakeLists.txt`内容
-```bash
-# 设置 CMake 最低版本要求
-cmake_minimum_required(VERSION 3.10)
+### 1. 文件结构目录
+```txt
+project/
+├── CMakeLists.txt                # 主项目文件
+├── tutorial.cxx                  # 主程序源文件
+├── TutorialConfig.h.in           # 配置文件模板
+├── MathFunctions/
+│   ├── CMakeLists.txt            # 子模块文件
+│   ├── MathFunctions.cxx         # 主库源文件
+│   ├── mysqrt.cxx                # 自定义平方根实现
+│   └── mysqrt.h                  # 自定义平方根头文件
+└── build/                        # 构建目录
+```
 
-# 定义项目名称和版本号
-project(Tutorial VERSION 1.0)
+### 2. 主项目的`CMakeLists.txt`
+```cmake
+cmake_minimum_required(VERSION 3.10)  # 设置 CMake 最低版本要求
+project(Tutorial VERSION 1.0)  # 定义项目名称和版本号
 
-# 配置 C++ 标准为 C++11，并强制要求编译器支持该标准
+# 设置 C++ 标准为 C++11，并强制要求编译器支持该标准
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -68,8 +79,10 @@ configure_file(TutorialConfig.h.in TutorialConfig.h)
 if (USE_MYMATH)
     # 添加子目录 MathFunctions，该目录应包含另一个 CMakeLists.txt
     add_subdirectory(MathFunctions)
+    
     # 将 MathFunctions 库添加到额外链接库列表
     list(APPEND EXTRA_LIBS MathFunctions)
+    
     # 将自定义数学库的头文件目录添加到额外包含目录列表
     list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/MathFunctions")
 endif ()
@@ -82,12 +95,12 @@ target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS})
 
 # 为可执行文件添加头文件包含目录
 target_include_directories(Tutorial PUBLIC
-    "${PROJECT_BINARY_DIR}"                # 包含生成的 TutorialConfig.h
+    "${PROJECT_BINARY_DIR}"      # 包含生成的 TutorialConfig.h
     "${PROJECT_SOURCE_DIR}/MathFunctions"  # 包含自定义数学库头文件
 )
 ```
 
-### 内层`CMakeLists.txt`内容
+### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```bash
 # 创建名为 MathFunctions 的静态库，仅包含 MathFunctions.cxx 源文件
 add_library(MathFunctions MathFunctions.cxx)
@@ -102,14 +115,21 @@ if (USE_MYMATH)
 endif ()
 ```
 
-### 其他文件修改
-```c++
-// TutorialConfig.h.in 文件
-#define Tutorial_VERSION_MAJOR "@Tutorial_VERSION_MAJOR@"
-#define Tutorial_VERSION_MINOR "@Tutorial_VERSION_MINOR@"
-#cmakedefine USE_MYMATH
+### 3. 代码中的条件编译
 
-// tutorial.cxx 文件
+```c++
+// MathFunctions.cxx
+#ifdef USE_MYMATH
+#include "mysqrt.h"
+#endif
+
+#ifdef USE_MYMATH
+    return detail::mysqrt(x);
+#else
+    return std::sqrt(x);
+#endif
+
+// tutorial.cxx
 #ifdef USE_MYMATH
 #include "MathFunctions.h"
 #endif
@@ -119,13 +139,5 @@ endif ()
 #else
   const double outputValue = std::sqrt(inputValue);
 #endif
-
-// MathFunctions.cxx 文件
-#ifdef USE_MYMATH
-    return detail::mysqrt(x);
-#else
-    return std::sqrt(x);
-#endif
 ```
-
 ---

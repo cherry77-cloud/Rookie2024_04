@@ -116,7 +116,7 @@ namespace mathfunctions {
 }
 ```
 
-### 3. 设置位置无关代码, 定义导出符号, `MathFunctions/CMakeLists.txt`
+### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
 # 定义 EXPORTING_MYMATH 符号
 target_compile_definitions(MathFunctions PRIVATE "EXPORTING_MYMATH")
@@ -176,7 +176,7 @@ export(EXPORT MathFunctionsTargets
 )
 ```
 
-### 2. `MathFunctions/CMakeLists.txt`
+### 2. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
 # 在 add_library(MathFunctions MathFunctions.cxx) 下面添加，处理路径兼容性
 target_include_directories(MathFunctions INTERFACE
@@ -357,7 +357,7 @@ export(EXPORT MathFunctionsTargets
 )
 ```
 
-### 3. `MathFunctions/CMakeLists.txt`
+### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
 # add the library that runs
 add_library(MathFunctions MathFunctions.cxx)

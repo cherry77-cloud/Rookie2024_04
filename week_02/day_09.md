@@ -432,3 +432,14 @@ set(CPACK_INSTALL_CMAKE_PROJECTS
     "release;Tutorial;ALL;/"
     )
 ```
+
+### 5. 打包
+```bash
+cd debug
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build .
+cd ../release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+cpack --config MultiCPackConfig.cmake
+```

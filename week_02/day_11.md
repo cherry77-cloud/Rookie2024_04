@@ -12,6 +12,7 @@ if (fd == -1) {
     exit(1);
 }
 
+/*
 pathname
     文件路径（绝对或相对路径）。
 flags
@@ -30,6 +31,7 @@ flags
 mode
     新文件的权限（仅在 O_CREAT 时有效），通常用八进制表示（如 0644）。
     实际权限 = mode & ~umask（umask 是进程的默认权限掩码）。
+*/
 ```
 
 ---
@@ -68,6 +70,7 @@ if (bytes_read == -1) {
     printf("Read %zd bytes: %.*s\n", bytes_read, (int)bytes_read, buffer);
 }
 
+/*
 参数
     fd：文件描述符。
     buf：存储数据的缓冲区地址。
@@ -81,5 +84,6 @@ if (bytes_read == -1) {
 注意
     需处理部分读取的情况（如网络或管道场景）。
     非阻塞模式下可能返回 -1，且 errno 为 EAGAIN 或 EWOULDBLOCK。
+*/
 ```
 ---

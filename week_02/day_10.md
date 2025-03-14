@@ -267,4 +267,54 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 | `setsockopt()`  | 设置 `Socket` 选项    | `TCP/UDP`  | 地址复用、超时配置     |
 | `select()`      | `I/O` 多路复用        | `TCP/UDP`  | 高并发事件驱动         |
 | `shutdown()`    | 半关闭连接          | `TCP`      | 优雅终止连接           |
+
+```dot
+digraph G {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    // 客户端流程
+    subgraph cluster_client {
+        label="客户端";
+        client_socket [label="socket()"];
+        client_connect [label="connect()"];
+        tcp_handshake [label="TCP三次握手", shape=ellipse, color=blue];
+        client_send [label="send()"];
+        client_recv [label="recv()"];
+        client_close [label="close()"];
+
+        client_socket -> client_connect -> tcp_handshake;
+        tcp_handshake -> client_send -> client_recv -> client_close;
+    }
+
+    // 服务器流程
+    subgraph cluster_server {
+        label="服务器";
+        server_socket [label="socket()"];
+        server_bind [label="bind()"];
+        server_listen [label="listen()"];
+        server_select [label="select()"];
+        server_accept [label="accept()"];
+        server_fork [label="fork()"];
+        parent_process [label="父进程（继续监听）", color=gray];
+        child_process [label="子进程处理请求"];
+        child_recv [label="recv()"];
+        process_request [label="处理请求"];
+        child_send [label="send()"];
+        child_recv2 [label="recv()"];
+        child_close [label="close()"];
+
+        server_socket -> server_bind -> server_listen -> server_select;
+        server_select -> server_accept -> server_fork;
+        server_fork -> parent_process [label="返回监听"];
+        server_fork -> child_process;
+        child_process -> child_recv -> process_request -> child_send -> child_recv2 -> child_close;
+    }
+
+    // 客户端与服务端交互
+    client_connect -> server_accept [label="TCP连接请求", color=red];
+    client_send -> child_recv [label="发送数据", color=green];
+    child_send -> client_recv [label="返回响应", color=green];
+}
+```
 ---

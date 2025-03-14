@@ -6,7 +6,6 @@
 #include <fcntl.h>
 int open(const char *pathname, int flags, mode_t mode); // mode 参数仅在创建文件时生效
 
-/*
 pathname
     文件路径（绝对或相对路径）。
 flags
@@ -25,5 +24,4 @@ flags
 mode
     新文件的权限（仅在 O_CREAT 时有效），通常用八进制表示（如 0644）。
     实际权限 = mode & ~umask（umask 是进程的默认权限掩码）。
-*/
 ```

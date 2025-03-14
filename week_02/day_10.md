@@ -268,7 +268,6 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 | `select()`      | `I/O` 多路复用        | `TCP/UDP`  | 高并发事件驱动         |
 | `shutdown()`    | 半关闭连接          | `TCP`      | 优雅终止连接           |
 
-
 ```mermaid
 graph TD
     subgraph 客户端

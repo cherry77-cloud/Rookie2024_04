@@ -11,7 +11,7 @@ if (fd == -1) {
     perror("open failed");
     exit(1);
 }
-
+/*
 pathname
     文件路径（绝对或相对路径）。
 flags
@@ -30,6 +30,7 @@ flags
 mode
     新文件的权限（仅在 O_CREAT 时有效），通常用八进制表示（如 0644）。
     实际权限 = mode & ~umask（umask 是进程的默认权限掩码）。
+*/
 ```
 
 ---
@@ -68,19 +69,19 @@ if (bytes_read == -1) {
     printf("Read %zd bytes: %.*s\n", bytes_read, (int)bytes_read, buffer);
 }
 
+/*
 参数
     fd：文件描述符。
     buf：存储数据的缓冲区地址。
     count：请求读取的字节数。
-
 返回值
     成功：返回实际读取的字节数（可能小于 count，如文件末尾或信号中断）。
     失败：返回 -1，并设置 errno。
     返回 0：表示到达文件末尾（EOF）。
-
 注意
     需处理部分读取的情况（如网络或管道场景）。
     非阻塞模式下可能返回 -1，且 errno 为 EAGAIN 或 EWOULDBLOCK。
+*/
 ```
 ---
 
@@ -100,16 +101,16 @@ if (bytes_written == -1) {
     printf("Partial write: %zd/%zu bytes written\n", bytes_written, strlen(data));
 }
 
+/*
 参数
     同 read()，但 buf 是写入数据的来源。
-
 返回值
     成功：返回实际写入的字节数（可能小于 count，如磁盘满或信号中断）。
     失败：返回 -1，并设置 errno。
-
 注意
     需处理部分写入的情况（循环写入直到所有数据写完）。
     使用 O_APPEND 标志可避免并发写入时的覆盖问题。
+*/
 ```
 ---
 ## 五. `umask()` 设置文件创建时的权限掩码

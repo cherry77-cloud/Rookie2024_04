@@ -2,7 +2,6 @@
 
 ### 1. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
-# 创建名为 MakeTable 的可执行文件，用于生成 Table.h 文件，MakeTable.cxx 是生成器的源代码，编译后将用于生成头文件
 add_executable(MakeTable MakeTable.cxx)
 
 # 定义自定义命令，描述如何生成 Table.h
@@ -12,7 +11,6 @@ add_custom_command(
     DEPENDS MakeTable  # 声明依赖 MakeTable 可执行文件，确保其先被编译
 )
 
-# 创建静态库 SqrtLibrary，其源文件为 mysqrt.cxx 和生成的 Table.h
 add_library(SqrtLibrary STATIC
     mysqrt.cxx
     ${CMAKE_CURRENT_BINARY_DIR}/Table.h
@@ -201,7 +199,6 @@ install(FILES MathFunctions.h DESTINATION include)
 ### 3. 在项目根目录创建 `Config.cmake.in`
 ```cmake
 @PACKAGE_INIT@  # 将被替换为路径处理代码
-
 include("${CMAKE_CURRENT_LIST_DIR}/MathFunctionsTargets.cmake")  # 包含导出的目标
 ```
 ---

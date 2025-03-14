@@ -115,7 +115,7 @@ inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 ---
 
 ## 四. 核心 `Socket` 操作函数
-### 1. `socket`
+### 1. `socket()`
 ```c
 int socket(int domain, int type, int protocol);
 // 创建一个通信端点 Socket，指定协议族、类型和协议。
@@ -127,7 +127,7 @@ int socket(int domain, int type, int protocol);
 int sockfd = socket(AF_INET, SOCK_STREAM, 0); // 创建 TCP Socket
 ```
 
-### 2. `bind`
+### 2. `bind()`
 ```c
 // 将 Socket 绑定到本地地址和端口（服务器端必用）。
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
@@ -141,7 +141,7 @@ addr.sin_addr.s_addr = htonl(INADDR_ANY); // 绑定所有接口
 bind(sockfd, (struct sockaddr*)&addr, sizeof(addr));
 ```
 
-### 3. `listen`
+### 3. `listen()`
 ```c
 // 将 Socket 设置为被动监听模式，等待客户端连接。
 int listen(int sockfd, int backlog);
@@ -150,7 +150,7 @@ int listen(int sockfd, int backlog);
 listen(sockfd, 10); // 允许最多 10 个连接排队
 ```
 
-### 4. `accept`
+### 4. `accept()`
 ```c
 // 从监听队列中接受一个客户端连接，返回新的 Socket 文件描述符。
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
@@ -161,7 +161,7 @@ socklen_t addrlen = sizeof(client_addr);
 int client_fd = accept(sockfd, (struct sockaddr*)&client_addr, &addrlen);
 ```
 
-### 5. `connect`
+### 5. `connect()`
 ```c
 // 客户端主动连接服务器（TCP）或指定默认目标地址（UDP）。
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
@@ -173,7 +173,7 @@ inet_pton(AF_INET, "192.168.1.1", &server_addr.sin_addr);
 connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
 ```
 
-### 6. `TCP`数据传输函数 `send / recv`
+### 6. `TCP`数据传输函数 `send() / recv()`
 ```c
 // 发送和接收数据（面向连接）。
 ssize_t send(int sockfd, const void *buf, size_t len, int flags);
@@ -186,7 +186,7 @@ send(sockfd, "Hello", 5, 0);       // 发送数据
 recv(sockfd, buffer, sizeof(buffer), 0); // 接收数据
 ```
 
-### 7. `UDP` 数据传输函数 `sendto / recvfrom`
+### 7. `UDP` 数据传输函数 `sendto() / recvfrom()`
 ```c
 // 发送和接收数据报（无连接）。
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
@@ -197,9 +197,32 @@ sendto(sockfd, "Hello", 5, 0, (struct sockaddr*)&server_addr, sizeof(server_addr
 recvfrom(sockfd, buffer, sizeof(buffer), 0, NULL, NULL);
 ```
 
-### 8. close
+### 8. `close()`
 ```c
 // 释放 Socket 资源。
 int close(int sockfd);
 close(sockfd);
+```
+---
+
+## 五. 高级 `Socket` 操作函数
+### 1. `setsockopt() / getsockopt()`
+```c
+// 配置 Socket 参数（如地址复用、超时、缓冲区大小）。
+int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+int getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
+
+// SO_REUSEADDR：允许地址复用（解决端口占用问题）。
+// SO_RCVTIMEO / SO_SNDTIMEO：设置接收/发送超时。
+int opt = 1;
+setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+```
+
+### 2. `shutdown()` 半关闭连接
+```c
+// 关闭 Socket 的读或写通道。
+int shutdown(int sockfd, int how);
+// how：SHUT_RD（关闭读）、SHUT_WR（关闭写）、SHUT_RDWR（全关闭）
+
+shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 ```

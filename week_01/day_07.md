@@ -55,7 +55,7 @@ struct timeval {
 - 非阻塞 `connect` 完成（成功或失败）。
 - 套接字有未处理的错误。
 #### 异常 (`exceptfds`)
-- 仅当接收到 带外数据（`OOB`） 时触发。
+- 仅当接收到带外数据（`OOB`） 时触发。
 
 ```c
 #include <stdio.h>

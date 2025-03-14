@@ -267,6 +267,7 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 | `setsockopt()`  | 设置 `Socket` 选项    | `TCP/UDP`  | 地址复用、超时配置     |
 | `select()`      | `I/O` 多路复用        | `TCP/UDP`  | 高并发事件驱动         |
 | `shutdown()`    | 半关闭连接          | `TCP`      | 优雅终止连接           |
+---
 
 ```mermaid
 graph TD
@@ -297,4 +298,3 @@ graph TD
     D -->|发送数据| O
     Q -->|返回响应| E
 ```
----

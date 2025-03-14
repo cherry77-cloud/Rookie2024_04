@@ -271,28 +271,29 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 
 
 ```mermaid
+```mermaid
 graph TD
     subgraph Client
-        A[socket()] --> B[connect()]
-        B --> C[TCP Handshake]
-        C --> D[send()]
-        D --> E[recv()]
-        E --> F[close()]
+        A("socket()") --> B("connect()")
+        B --> C("TCP Handshake")
+        C --> D("send()")
+        D --> E("recv()")
+        E --> F("close()")
     end
 
     subgraph Server
-        G[socket()] --> H[bind()]
-        H --> I[listen()]
-        I --> J[select()]
-        J --> K[accept()]
-        K --> L[fork()]
-        L --> M[Parent Process]
-        L --> N[Child Process]
-        N --> O[recv()]
-        O --> P[Process Request]
-        P --> Q[send()]
-        Q --> R[recv()]
-        R --> S[close()]
+        G("socket()") --> H("bind()")
+        H --> I("listen()")
+        I --> J("select()")
+        J --> K("accept()")
+        K --> L("fork()")
+        L --> M("Parent Process")
+        L --> N("Child Process")
+        N --> O("recv()")
+        O --> P("Process Request")
+        P --> Q("send()")
+        Q --> R("recv()")
+        R --> S("close()")
     end
 
     B -->|TCP Connection Request| K

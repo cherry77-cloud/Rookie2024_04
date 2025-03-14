@@ -34,27 +34,14 @@
 
 ### 2. 主项目的`CMakeLists.txt`
 ```cmake
-# 指定 CMake 的最低版本要求为 3.10
 cmake_minimum_required(VERSION 3.10)
-
-# 定义项目名称为 "Tutorial"，并设置项目版本为 1.0
 project(Tutorial VERSION 1.0)
-
-# 设置 C++ 标准为 C++11
 set(CMAKE_CXX_STANDARD 11)
-
-# 要求必须支持指定的 C++ 标准（即 C++11），如果不支持则报错
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# 使用 configure_file 命令将模板文件 TutorialConfig.h.in 中的变量替换为实际值，
-# 并生成配置文件 TutorialConfig.h。这个文件通常用于在代码中访问 CMake 中定义的变量。
 configure_file(TutorialConfig.h.in TutorialConfig.h)
-
-# 添加一个可执行目标 "Tutorial"，其源文件为 tutorial.cxx
 add_executable(Tutorial tutorial.cxx)
 
 # 为可执行目标 "Tutorial" 添加包含目录，使得编译器能够找到生成的头文件 TutorialConfig.h。
-# ${PROJECT_BINARY_DIR} 是构建目录的路径，通常是 "build" 目录。
 target_include_directories(Tutorial PUBLIC ${PROJECT_BINARY_DIR})
 ```
 
@@ -85,20 +72,16 @@ project/
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 project(Tutorial VERSION 1.0)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 option(USE_MYMATH "Use tutorial provided math implementation" ON)
 configure_file(TutorialConfig.h.in TutorialConfig.h)
 
 if (USE_MYMATH)
     # 添加子目录 MathFunctions，该目录应包含另一个 CMakeLists.txt
     add_subdirectory(MathFunctions)
-    
     # 将 MathFunctions 库添加到额外链接库列表
     list(APPEND EXTRA_LIBS MathFunctions)
-    
     # 将自定义数学库的头文件目录添加到额外包含目录列表
     list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/MathFunctions")
 endif ()
@@ -106,16 +89,14 @@ endif ()
 add_executable(Tutorial tutorial.cxx)
 target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS})
 
-# 为可执行文件添加头文件包含目录
 target_include_directories(Tutorial PUBLIC
-    "${PROJECT_BINARY_DIR}"      # 包含生成的 TutorialConfig.h
+    "${PROJECT_BINARY_DIR}"                # 包含生成的 TutorialConfig.h
     "${PROJECT_SOURCE_DIR}/MathFunctions"  # 包含自定义数学库头文件
 )
 ```
 
 ### 3. 子模块 `MathFunctions` 的 `CMakeLists.txt`
 ```cmake
-# 创建名为 MathFunctions 的静态库，仅包含 MathFunctions.cxx 源文件
 add_library(MathFunctions MathFunctions.cxx)
 
 if (USE_MYMATH)
@@ -211,11 +192,11 @@ set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 # 为接口库添加编译器选项, 使用生成器表达式根据编译器类型设置不同的编译选项
 target_compile_options(tutorial_compiler_flags INTERFACE
     # 对于类 GCC 的编译器，启用以下警告选项：
-        # -Wall：启用所有常见警告
-        # -Wextra：启用额外警告
-        # -Wshadow：警告变量遮蔽
-        # -Wformat=2：检查格式化字符串的安全性
-        # -Wunused：警告未使用的变量或函数
+    # -Wall：启用所有常见警告
+    # -Wextra：启用额外警告
+    # -Wshadow：警告变量遮蔽
+    # -Wformat=2：检查格式化字符串的安全性
+    # -Wunused：警告未使用的变量或函数
     "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
     # 对于 MSVC 编译器，启用警告级别 3（-W3）
     "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"

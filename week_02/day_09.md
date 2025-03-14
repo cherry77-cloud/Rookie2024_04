@@ -441,3 +441,91 @@ cmake --build .
 cpack --config MultiCPackConfig.cmake
 ```
 ---
+## CMake 常用常量和变量
+
+### 1. 常用常量
+- **`CMAKE_SOURCE_DIR`**: 顶级源代码目录的路径（即包含顶层 `CMakeLists.txt` 的目录）。
+- **`CMAKE_BINARY_DIR`**: 顶级构建目录的路径（即运行 `cmake` 命令的目录）。
+- **`CMAKE_CURRENT_SOURCE_DIR`**: 当前处理的 `CMakeLists.txt` 所在的目录。
+- **`CMAKE_CURRENT_BINARY_DIR`**: 当前构建目录的路径。
+- **`CMAKE_MODULE_PATH`**: 指定查找 CMake 模块的路径。
+- **`CMAKE_INSTALL_PREFIX`**: 安装目录的路径（默认为 `/usr/local` 或 `C:/Program Files`）。
+- **`CMAKE_BUILD_TYPE`**: 构建类型（如 `Debug`、`Release`、`RelWithDebInfo`、`MinSizeRel`）。
+- **`CMAKE_CXX_COMPILER`**: C++ 编译器的路径。
+- **`CMAKE_C_COMPILER`**: C 编译器的路径。
+- **`CMAKE_SYSTEM_NAME`**: 目标系统的名称（如 `Linux`、`Windows`、`Darwin`）。
+- **`CMAKE_SYSTEM_VERSION`**: 目标系统的版本。
+- **`CMAKE_SYSTEM_PROCESSOR`**: 目标系统的处理器架构（如 `x86_64`、`ARM`）。
+
+### 2. 平台相关常量
+- **`WIN32`**: 在 Windows 平台上为 `True`。
+- **`APPLE`**: 在 macOS 或 iOS 平台上为 `True`。
+- **`UNIX`**: 在 UNIX 平台（包括 Linux 和 macOS）上为 `True`。
+- **`CMAKE_HOST_SYSTEM_NAME`**: 主机系统的名称。
+- **`CMAKE_HOST_SYSTEM_PROCESSOR`**: 主机系统的处理器架构。
+
+### 3. 编译器相关常量
+- **`CMAKE_CXX_STANDARD`**: 指定 C++ 标准版本（如 `11`、`14`、`17`、`20`）。
+- **`CMAKE_C_STANDARD`**: 指定 C 标准版本（如 `99`、`11`、`17`）。
+- **`CMAKE_CXX_COMPILER_ID`**: 编译器 ID（如 `GNU`、`Clang`、`MSVC`）。
+- **`CMAKE_CXX_FLAGS`**: C++ 编译器的全局标志。
+- **`CMAKE_C_FLAGS`**: C 编译器的全局标志。
+
+### 4. 构建目标相关常量
+- **`CMAKE_LIBRARY_OUTPUT_DIRECTORY`**: 库文件的输出目录。
+- **`CMAKE_RUNTIME_OUTPUT_DIRECTORY`**: 可执行文件的输出目录。
+- **`CMAKE_ARCHIVE_OUTPUT_DIRECTORY`**: 静态库文件的输出目录。
+- **`CMAKE_DEBUG_POSTFIX`**: 在 Debug 模式下为库或可执行文件添加后缀（如 `_d`）。
+- **`CMAKE_POSITION_INDEPENDENT_CODE`**: 是否生成位置无关代码（PIC）。
+
+### 5. 安装相关常量
+- **`CMAKE_INSTALL_PREFIX`**: 安装路径的前缀。
+- **`CMAKE_INSTALL_BINDIR`**: 可执行文件的安装目录（默认为 `bin`）。
+- **`CMAKE_INSTALL_LIBDIR`**: 库文件的安装目录（默认为 `lib`）。
+- **`CMAKE_INSTALL_INCLUDEDIR`**: 头文件的安装目录（默认为 `include`）。
+
+### 6. 查找工具相关常量
+- **`CMAKE_FIND_ROOT_PATH`**: 指定查找库和头文件的根路径。
+- **`CMAKE_FIND_LIBRARY_PREFIXES`**: 库文件的前缀（如 `lib`）。
+- **`CMAKE_FIND_LIBRARY_SUFFIXES`**: 库文件的后缀（如 `.so`、`.a`、`.dll`）。
+
+### 7. 生成器相关常量
+- **`CMAKE_GENERATOR`**: 当前使用的生成器（如 `Unix Makefiles`、`Ninja`、`Visual Studio`）。
+- **`CMAKE_GENERATOR_PLATFORM`**: 生成器的目标平台（如 `x64`、`Win32`）。
+- **`CMAKE_GENERATOR_TOOLSET`**: 生成器的工具集（如 `v142` 用于 Visual Studio）。
+
+### 8. 其他常用变量
+- **`PROJECT_NAME`**: 当前项目的名称。
+- **`PROJECT_SOURCE_DIR`**: 当前项目的源代码目录。
+- **`PROJECT_BINARY_DIR`**: 当前项目的构建目录。
+- **`CMAKE_VERSION`**: CMake 的版本号。
+- **`CMAKE_MAJOR_VERSION`**: CMake 的主版本号。
+- **`CMAKE_MINOR_VERSION`**: CMake 的次版本号。
+- **`CMAKE_PATCH_VERSION`**: CMake 的补丁版本号。
+
+### 9. 环境变量
+- **`ENV{PATH}`**: 访问系统的 `PATH` 环境变量。
+- **`ENV{HOME}`**: 访问用户的主目录路径。
+
+### 10. 控制流相关常量
+- **`CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS`**: 允许宽松的循环语法。
+- **`CMAKE_MINIMUM_REQUIRED_VERSION`**: 指定 CMake 的最低版本要求。
+
+### 11. 调试和日志
+- **`CMAKE_MESSAGE_LOG_LEVEL`**: 控制日志输出级别（如 `DEBUG`、`VERBOSE`、`STATUS`）。
+- **`CMAKE_VERBOSE_MAKEFILE`**: 启用详细的 Makefile 输出。
+
+### 12. 交叉编译相关
+- **`CMAKE_CROSSCOMPILING`**: 是否正在交叉编译。
+- **`CMAKE_TOOLCHAIN_FILE`**: 指定工具链文件的路径。
+
+### 13. 模块路径
+- **`CMAKE_MODULE_PATH`**: 指定查找 CMake 模块的路径。
+
+### 14. 测试相关
+- **`CTEST_COMMAND`**: CTest 命令的路径。
+- **`CMAKE_TESTING_ENABLED`**: 是否启用测试。
+
+### 15. 包管理相关
+- **`CMAKE_FIND_PACKAGE_NAME`**: 当前查找的包名称。
+- **`CMAKE_FIND_PACKAGE_SORT_DIRECTION`**: 控制包查找的排序方向。

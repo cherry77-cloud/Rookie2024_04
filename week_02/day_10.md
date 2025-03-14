@@ -115,7 +115,7 @@ inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 ---
 
 ## 四. 核心 `Socket` 操作函数
-### 1. `socket()`
+### 1. `socket()` 创建 `Socket`
 ```c
 int socket(int domain, int type, int protocol);
 // 创建一个通信端点 Socket，指定协议族、类型和协议。
@@ -127,7 +127,7 @@ int socket(int domain, int type, int protocol);
 int sockfd = socket(AF_INET, SOCK_STREAM, 0); // 创建 TCP Socket
 ```
 
-### 2. `bind()`
+### 2. `bind()` 绑定地址和端口
 ```c
 // 将 Socket 绑定到本地地址和端口（服务器端必用）。
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
@@ -141,7 +141,7 @@ addr.sin_addr.s_addr = htonl(INADDR_ANY); // 绑定所有接口
 bind(sockfd, (struct sockaddr*)&addr, sizeof(addr));
 ```
 
-### 3. `listen()`
+### 3. `listen()` 监听连接请求 `TCP`
 ```c
 // 将 Socket 设置为被动监听模式，等待客户端连接。
 int listen(int sockfd, int backlog);
@@ -150,7 +150,7 @@ int listen(int sockfd, int backlog);
 listen(sockfd, 10); // 允许最多 10 个连接排队
 ```
 
-### 4. `accept()`
+### 4. `accept()` 接受客户端连接 `TCP`
 ```c
 // 从监听队列中接受一个客户端连接，返回新的 Socket 文件描述符。
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
@@ -161,7 +161,7 @@ socklen_t addrlen = sizeof(client_addr);
 int client_fd = accept(sockfd, (struct sockaddr*)&client_addr, &addrlen);
 ```
 
-### 5. `connect()`
+### 5. `connect()` 连接到服务器（`TCP/UDP`）
 ```c
 // 客户端主动连接服务器（TCP）或指定默认目标地址（UDP）。
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
@@ -206,7 +206,7 @@ close(sockfd);
 ---
 
 ## 五. 高级 `Socket` 操作函数
-### 1. `setsockopt() / getsockopt()`
+### 1. `setsockopt() / getsockopt()` 设置/获取 `Socket` 选项
 ```c
 // 配置 Socket 参数（如地址复用、超时、缓冲区大小）。
 int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
@@ -226,3 +226,31 @@ int shutdown(int sockfd, int how);
 
 shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 ```
+
+## 六. `Unix Domain Socket` 流程
+### 服务器端 `TCP`
+- **创建 `Socket`** `socket(AF_UNIX, SOCK_STREAM, 0)`
+- **绑定地址** `bind(sockfd, (struct sockaddr*)&addr, sizeof(addr))`
+- **监听连接** `listen(sockfd, backlog)`
+- **接受连接** `accept(sockfd, NULL, NULL)`
+- **收发数据** `read()/write()` 或 `recv()/send()`
+- **关闭 `Socket`** `close(sockfd)`
+
+### 客户端 `TCP`
+- **创建 `Socket`** `socket(AF_UNIX, SOCK_STREAM, 0)`
+- **连接服务器** `connect(sockfd, (struct sockaddr*)&addr, sizeof(addr))`
+- **收发数据** `read()/write()` 或 `recv()/send()`
+- **关闭 `Socket`** `close(sockfd)`
+---
+
+### 服务器端 `UDP`
+- **创建 `Socket`** `socket(AF_UNIX, SOCK_DGRAM, 0)`
+- **绑定地址** `bind(sockfd, (struct sockaddr*)&addr, sizeof(addr))`
+- **收发数据** `recvfrom()` 和 `sendto()`
+- **关闭 `Socket`** `close(sockfd)`
+
+### 客户端 `UDP`
+- **创建 `Socket`** `socket(AF_UNIX, SOCK_DGRAM, 0)`
+- **收发数据** `sendto()` 和 `recvfrom()`
+- **关闭 `Socket`** `close(sockfd)`
+---

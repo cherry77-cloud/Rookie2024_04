@@ -257,8 +257,8 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 #### `ET`（边沿触发）
 - 仅在文件描述符状态 变化时 通知一次（如从不可读变为可读）。
 - 必须一次性处理所有数据，否则可能丢失后续事件。
-- 文件描述符必须设为非阻塞模式，避免阻塞在未完成的 I/O 操作。
-- 在 events 字段中设置 EPOLLET 标志。
+- 文件描述符必须设为非阻塞模式，避免阻塞在未完成的 `I/O` 操作。
+- 在 `events` 字段中设置 `EPOLLET` 标志。
 
 #### `EPOLLONESHOT` 事件
 - 确保一个事件只被触发一次，需手动调用 `epoll_ctl` 重新注册。

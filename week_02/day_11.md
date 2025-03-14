@@ -6,6 +6,12 @@
 #include <fcntl.h>
 int open(const char *pathname, int flags, mode_t mode); // mode 参数仅在创建文件时生效
 
+int fd = open("data.txt", O_WRONLY | O_CREAT | O_EXCL, 0644);
+if (fd == -1) {
+    perror("open failed");
+    exit(1);
+}
+
 pathname
     文件路径（绝对或相对路径）。
 flags
@@ -25,3 +31,55 @@ mode
     新文件的权限（仅在 O_CREAT 时有效），通常用八进制表示（如 0644）。
     实际权限 = mode & ~umask（umask 是进程的默认权限掩码）。
 ```
+
+---
+
+## 二. `close()` 关闭文件
+- 关闭文件描述符，释放内核资源。
+- 未关闭文件可能导致资源泄漏（文件描述符数量有上限）。
+
+```c
+#include <unistd.h>
+int close(int fd);
+
+if (close(fd) == -1) {
+    perror("close failed");
+}
+```
+
+---
+
+## 三. `read()` 从文件读取数据
+- 从文件描述符对应的文件中读取数据到缓冲区。
+- 默认是阻塞的（若文件无数据，进程会等待）。
+
+
+```c
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t count);
+
+char buffer[1024];
+ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
+if (bytes_read == -1) {
+    perror("read failed");
+} else if (bytes_read == 0) {
+    printf("Reached end of file.\n");
+} else {
+    printf("Read %zd bytes: %.*s\n", bytes_read, (int)bytes_read, buffer);
+}
+
+参数
+    fd：文件描述符。
+    buf：存储数据的缓冲区地址。
+    count：请求读取的字节数。
+
+返回值
+    成功：返回实际读取的字节数（可能小于 count，如文件末尾或信号中断）。
+    返回 0：表示到达文件末尾（EOF）。
+    失败：返回 -1，并设置 errno。
+
+注意
+    需处理部分读取的情况（如网络或管道场景）。
+    非阻塞模式下可能返回 -1，且 errno 为 EAGAIN 或 EWOULDBLOCK。
+```
+---

@@ -52,7 +52,30 @@ struct sockaddr {
 ---
 
 ## 二. 字节序
+
+### 1. 什么是字节序
 字节序是数据在内存中存储的字节顺序，分为两种：
 - 大端序（`Big-Endian`）：高位字节存储在低地址。`0x12345678` 存储为 `12 34 56 78`（从左到右地址递增）。
 - 小端序（`Little-Endian`）：低位字节存储在低地址。`0x12345678` 存储为 `78 56 34 12`（从左到右地址递增）。
 - 网络字节序：统一使用大端序，确保跨平台数据传输的一致性。
+
+### 2. 字节序转换函数
+```c
+// 发送数据前：将主机序的端口和 IP 地址转换为网络序
+// 接收数据后：将网络序的端口和 IP 地址转换回主机序
+
+// 1. htons 将 16 位无符号整数从主机序转为网络序 Host to Network Short
+uint16_t htons(uint16_t host_short);
+struct sockaddr_in addr;
+addr.sin_port = htons(8080); // 主机序 → 网络序
+
+// 2. htonl 将 32 位无符号整数从主机序转为网络序 Host to Network Long
+uint32_t htonl(uint32_t host_long);
+addr.sin_addr.s_addr = htonl(INADDR_ANY); // 绑定所有接口
+
+// 3. ntohs 将 16 位无符号整数从网络序转为主机序 Network to Host Short
+uint16_t ntohs(uint16_t network_short);
+
+// 4. ntohl 将 32 位无符号整数从网络序转为主机序 Network to Host Long
+uint32_t ntohl(uint32_t network_long);
+```

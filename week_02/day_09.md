@@ -441,7 +441,7 @@ cmake --build .
 cpack --config MultiCPackConfig.cmake
 ```
 ---
-## CMake 常用常量和变量
+## 六. `CMake` 常用常量和变量
 
 ### 1. 常用常量
 - **`CMAKE_SOURCE_DIR`**: 顶级源代码目录的路径（即包含顶层 `CMakeLists.txt` 的目录）。

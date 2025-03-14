@@ -253,4 +253,18 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 - **创建 `Socket`** `socket(AF_UNIX, SOCK_DGRAM, 0)`
 - **收发数据** `sendto()` 和 `recvfrom()`
 - **关闭 `Socket`** `close(sockfd)`
+
+| 函数            | 用途                | 适用协议 | 示例场景               |
+|-----------------|---------------------|----------|------------------------|
+| `socket()`      | 创建 `Socket`        | `TCP/UDP`  | 初始化通信端点         |
+| `bind()`        | 绑定地址和端口      | `TCP/UDP`  | 服务器端设置监听地址   |
+| `listen()`      | 监听连接请求        | `TCP`      | 服务器准备接受连接     |
+| `accept()`      | 接受客户端连接      | `TCP`      | 服务器处理新连接       |
+| `connect()`     | 连接服务器          | `TCP/UDP`  | 客户端发起连接         |
+| `send()` / `recv()` | `TCP` 数据传输    | `TCP`      | 可靠数据流通信         |
+| `sendto()` / `recvfrom()` | `UDP` 数据传输 | `UDP`      | 无连接数据报通信       |
+| `close()`       | 关闭 `Socket`         | `TCP/UDP`  | 释放资源               |
+| `setsockopt()`  | 设置 `Socket` 选项    | `TCP/UDP`  | 地址复用、超时配置     |
+| `select()`      | `I/O` 多路复用        | `TCP/UDP`  | 高并发事件驱动         |
+| `shutdown()`    | 半关闭连接          | `TCP`      | 优雅终止连接           |
 ---

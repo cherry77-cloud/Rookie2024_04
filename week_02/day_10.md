@@ -105,3 +105,11 @@ struct in6_addr addr6;
 char str[INET6_ADDRSTRLEN];
 inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 ```
+
+| 函数/概念         | 用途                                | 示例场景                     |
+|-------------------|-------------------------------------|------------------------------|
+| `htons()` / `htonl()` | 主机序 → 网络序（端口/IP）         | 设置 `sockaddr_in` 结构体    |
+| `ntohs()` / `ntohl()` | 网络序 → 主机序（端口/IP）         | 解析接收到的数据             |
+| `inet_pton()`      | 字符串 `IP` → 二进制 `IP`（支持 `IPv4/IPv6`） | 配置服务器地址               |
+| `inet_ntop()`      | 二进制 `IP` → 字符串 `IP`（支持 `IPv4/IPv6`） | 日志输出或显示 `IP`            |
+---

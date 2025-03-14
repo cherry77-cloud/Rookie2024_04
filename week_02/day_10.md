@@ -271,7 +271,6 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 
 
 ```mermaid
-```mermaid
 graph TD
     subgraph Client
         A("socket()") --> B("connect()")

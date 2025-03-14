@@ -122,3 +122,205 @@ if (bytes_written == -1) {
   - `002`: 屏蔽其他用户的写权限。
   - `077`: 屏蔽所有组和其他用户的权限。
 ---
+
+## 六. `stat()` 和 `lstat()` 获取文件元数据
+
+- 获取文件的元数据（如类型、权限、大小、时间戳等）。
+
+```c
+#include <sys/stat.h>
+#include <unistd.h>
+
+int stat(const char *pathname, struct stat *statbuf);    // 跟随符号链接
+int lstat(const char *pathname, struct stat *statbuf);   // 不跟随符号链接
+
+struct stat {
+    dev_t     st_dev;         // 文件所在设备的 ID
+    ino_t     st_ino;         // 文件的 inode 号
+    mode_t    st_mode;        // 文件类型和权限
+    nlink_t   st_nlink;       // 硬链接数
+    uid_t     st_uid;         // 文件所有者的用户 ID
+    gid_t     st_gid;         // 文件所有者的组 ID
+    dev_t     st_rdev;        // 设备文件的设备 ID（仅对设备文件有效）
+    off_t     st_size;        // 文件大小（字节）
+    blksize_t st_blksize;     // 文件系统的 I/O 块大小
+    blkcnt_t  st_blocks;      // 文件占用的磁盘块数
+
+    // 时间戳（精度到纳秒）
+    struct timespec st_atim;  // 最后访问时间
+    struct timespec st_mtim;  // 最后修改时间（文件内容）
+    struct timespec st_ctim;  // 最后状态变更时间（元数据，如权限）
+};
+```
+
+文件类型判断宏和权限位检查宏
+```c
+S_ISREG(st_mode)   // 普通文件
+S_ISDIR(st_mode)   // 目录
+S_ISLNK(st_mode)   // 符号链接
+S_ISCHR(st_mode)   // 字符设备文件
+S_ISBLK(st_mode)   // 块设备文件
+S_ISFIFO(st_mode)  // 管道文件（FIFO）
+S_ISSOCK(st_mode)  // 套接字文件
+
+S_IRUSR  // 用户读权限（0400）
+S_IWUSR  // 用户写权限（0200）
+S_IXUSR  // 用户执行权限（0100）
+S_IRGRP  // 组读权限（0040）
+S_IWGRP  // 组写权限（0020）
+S_IXGRP  // 组执行权限（0010）
+S_IROTH  // 其他用户读权限（0004）
+S_IWOTH  // 其他用户写权限（0002）
+S_IXOTH  // 其他用户执行权限（0001）
+```
+---
+
+## 七. 文件属性操作函数
+
+### `chmod()` 修改文件权限
+- 修改文件的权限位（`mode`），如 `rwxr-xr--`。
+
+```c
+#include <sys/stat.h>
+int chmod(const char *pathname, mode_t mode);
+/*
+参数
+    pathname：文件路径。
+    mode：新权限（八进制数，如 0644）。
+返回值
+    成功返回 0，失败返回 -1。
+*/
+```
+
+### `chown()`修改文件所有者和组
+
+- 修改文件的所有者用户 `ID（uid）`和组 `ID（gid）`。
+
+```c
+#include <unistd.h>
+int chown(const char *pathname, uid_t owner, gid_t group);
+/*
+参数
+    pathname：文件路径。
+    owner：新所有者的用户 ID（设为 -1 表示不修改）。
+    group：新组的组 ID（设为 -1 表示不修改）。
+返回值
+    成功返回 0，失败返回 -1。
+*/
+```
+
+### `access()` 检查文件权限
+- 检查当前进程对文件的访问权限。
+```c
+#include <unistd.h>
+int access(const char *pathname, int mode);
+
+/*
+mode：
+    F_OK：文件是否存在。
+    R_OK：是否可读。
+    W_OK：是否可写。
+    X_OK：是否可执行。
+*/
+```
+
+### `truncate()` 和 `ftruncate()` 修改文件大小
+```c
+#include <unistd.h>
+int truncate(const char *pathname, off_t length);   // 通过路径
+int ftruncate(int fd, off_t length);               // 通过文件描述符
+```
+
+- `stat()` 和 `lstat()` 获取文件元数据，区别在于是否跟随符号链接。
+- `struct stat` 存储文件类型、权限、大小、时间戳等关键信息。
+- `chmod()` 修改文件权限（八进制模式）。
+- `chown()` 修改文件所有者和组。
+- 其他工具函数 `access()、utime()、truncate() ` 等用于更精细的文件属性操作。
+
+```c
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
+#include <string.h>
+
+int main(int argc, char * argv[]) 
+{
+    if (argc < 2) {
+        printf("%s filename\n", argv[0]);
+        return -1;
+    }
+    struct stat st;
+    int ret = stat(argv[1], &st);
+    if (ret == -1) {
+        perror("stat");
+        return -1;
+    }
+    char perms[11] = {0};
+    switch(st.st_mode & S_IFMT) {
+        case S_IFLNK:
+            perms[0] = 'l';
+            break;
+        case S_IFDIR:
+            perms[0] = 'd';
+            break;
+        case S_IFREG:
+            perms[0] = '-';
+            break; 
+        case S_IFBLK:
+            perms[0] = 'b';
+            break; 
+        case S_IFCHR:
+            perms[0] = 'c';
+            break; 
+        case S_IFSOCK:
+            perms[0] = 's';
+            break;
+        case S_IFIFO:
+            perms[0] = 'p';
+            break;
+        default:
+            perms[0] = '?';
+            break;
+    }
+
+    // 文件所有者
+    perms[1] = (st.st_mode & S_IRUSR) ? 'r' : '-';
+    perms[2] = (st.st_mode & S_IWUSR) ? 'w' : '-';
+    perms[3] = (st.st_mode & S_IXUSR) ? 'x' : '-';
+
+    // 文件所在组
+    perms[4] = (st.st_mode & S_IRGRP) ? 'r' : '-';
+    perms[5] = (st.st_mode & S_IWGRP) ? 'w' : '-';
+    perms[6] = (st.st_mode & S_IXGRP) ? 'x' : '-';
+
+    // 其他人
+    perms[7] = (st.st_mode & S_IROTH) ? 'r' : '-';
+    perms[8] = (st.st_mode & S_IWOTH) ? 'w' : '-';
+    perms[9] = (st.st_mode & S_IXOTH) ? 'x' : '-';
+
+    // 硬连接数
+    int linkNum = st.st_nlink;
+    // 文件所有者
+    char * fileUser = getpwuid(st.st_uid)->pw_name;
+    // 文件所在组
+    char * fileGrp = getgrgid(st.st_gid)->gr_name;
+    // 文件大小
+    long int fileSize = st.st_size;
+
+    // 获取修改的时间
+    char * time = ctime(&st.st_mtime);
+    char mtime[512] = {0};
+    strncpy(mtime, time, strlen(time) - 1);
+    
+    char buf[1024];
+    sprintf(buf, "%s %d %s %s %ld %s %s", perms, linkNum, fileUser, fileGrp, fileSize, mtime, argv[1]);
+    printf("%s\n", buf);
+    return 0;
+}
+```
+
+---

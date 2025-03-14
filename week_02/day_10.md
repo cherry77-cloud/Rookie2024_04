@@ -113,3 +113,15 @@ inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 | `inet_pton()`      | 字符串 `IP` → 二进制 `IP`（支持 `IPv4/IPv6`） | 配置服务器地址               |
 | `inet_ntop()`      | 二进制 `IP` → 字符串 `IP`（支持 `IPv4/IPv6`） | 日志输出或显示 `IP`            |
 ---
+
+## 四. 核心 `Socket` 操作函数
+### 1. `socket()` -> 创建 `socket`. 创建一个通信端点（`Socket`），指定协议族、类型和协议
+```c
+int socket(int domain, int type, int protocol);
+// domain   => 协议族，如 AF_INET（IPv4）、AF_INET6（IPv6）、AF_UNIX（本地通信）
+// type     => Socket 类型，如 SOCK_STREAM（TCP）、SOCK_DGRAM（UDP）
+// protocol => 具体协议，通常设为 0。
+// 返回值：成功返回 Socket 文件描述符，失败返回 -1。
+
+int sockfd = socket(AF_INET, SOCK_STREAM, 0); // 创建 TCP Socket
+```

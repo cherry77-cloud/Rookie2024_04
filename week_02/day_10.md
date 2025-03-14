@@ -271,30 +271,30 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 
 ```mermaid
 graph TD
-    subgraph 客户端
+    subgraph Client
         A[socket()] --> B[connect()]
-        B --> C[TCP三次握手]
+        B --> C[TCP Handshake]
         C --> D[send()]
         D --> E[recv()]
         E --> F[close()]
     end
 
-    subgraph 服务器
+    subgraph Server
         G[socket()] --> H[bind()]
         H --> I[listen()]
         I --> J[select()]
         J --> K[accept()]
         K --> L[fork()]
-        L --> M[父进程继续监听]
-        L --> N[子进程处理请求]
+        L --> M[Parent Process]
+        L --> N[Child Process]
         N --> O[recv()]
-        O --> P[处理请求]
+        O --> P[Process Request]
         P --> Q[send()]
         Q --> R[recv()]
         R --> S[close()]
     end
 
-    B -->|TCP连接请求| K
-    D -->|发送数据| O
-    Q -->|返回响应| E
+    B -->|TCP Connection Request| K
+    D -->|Send Data| O
+    Q -->|Return Response| E
 ```

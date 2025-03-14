@@ -115,13 +115,91 @@ inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 ---
 
 ## 四. 核心 `Socket` 操作函数
-### 1. `socket()` -> 创建 `socket`. 创建一个通信端点（`Socket`），指定协议族、类型和协议
+### 1. `socket`
 ```c
 int socket(int domain, int type, int protocol);
+// 创建一个通信端点 Socket，指定协议族、类型和协议。
 // domain   => 协议族，如 AF_INET（IPv4）、AF_INET6（IPv6）、AF_UNIX（本地通信）
 // type     => Socket 类型，如 SOCK_STREAM（TCP）、SOCK_DGRAM（UDP）
 // protocol => 具体协议，通常设为 0。
 // 返回值：成功返回 Socket 文件描述符，失败返回 -1。
 
 int sockfd = socket(AF_INET, SOCK_STREAM, 0); // 创建 TCP Socket
+```
+
+### 2. `bind`
+```c
+// 将 Socket 绑定到本地地址和端口（服务器端必用）。
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+// addr：指向地址结构体的指针（如 struct sockaddr_in）。
+// addrlen：地址结构体的长度。
+
+struct sockaddr_in addr;
+addr.sin_family = AF_INET;
+addr.sin_port = htons(8080);           // 端口
+addr.sin_addr.s_addr = htonl(INADDR_ANY); // 绑定所有接口
+bind(sockfd, (struct sockaddr*)&addr, sizeof(addr));
+```
+
+### 3. `listen`
+```c
+// 将 Socket 设置为被动监听模式，等待客户端连接。
+int listen(int sockfd, int backlog);
+// backlog：等待连接队列的最大长度（建议至少设为 5）
+
+listen(sockfd, 10); // 允许最多 10 个连接排队
+```
+
+### 4. `accept`
+```c
+// 从监听队列中接受一个客户端连接，返回新的 Socket 文件描述符。
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+// addr 保存客户端地址信息（可选，设为 NULL 可忽略）。
+
+struct sockaddr_in client_addr;
+socklen_t addrlen = sizeof(client_addr);
+int client_fd = accept(sockfd, (struct sockaddr*)&client_addr, &addrlen);
+```
+
+### 5. `connect`
+```c
+// 客户端主动连接服务器（TCP）或指定默认目标地址（UDP）。
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+struct sockaddr_in server_addr;
+server_addr.sin_family = AF_INET;
+server_addr.sin_port = htons(8080);
+inet_pton(AF_INET, "192.168.1.1", &server_addr.sin_addr);
+connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+```
+
+### 6. `TCP`数据传输函数 `send / recv`
+```c
+// 发送和接收数据（面向连接）。
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+// flags：控制选项（如 MSG_WAITALL 等待完整数据）。
+
+
+char buffer[1024];
+send(sockfd, "Hello", 5, 0);       // 发送数据
+recv(sockfd, buffer, sizeof(buffer), 0); // 接收数据
+```
+
+### 7. `UDP` 数据传输函数 `sendto / recvfrom`
+```c
+// 发送和接收数据报（无连接）。
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen);
+
+struct sockaddr_in server_addr;
+sendto(sockfd, "Hello", 5, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
+recvfrom(sockfd, buffer, sizeof(buffer), 0, NULL, NULL);
+```
+
+### 8. close
+```c
+// 释放 Socket 资源。
+int close(int sockfd);
+close(sockfd);
 ```

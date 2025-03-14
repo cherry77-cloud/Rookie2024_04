@@ -64,18 +64,44 @@ struct sockaddr {
 // 发送数据前：将主机序的端口和 IP 地址转换为网络序
 // 接收数据后：将网络序的端口和 IP 地址转换回主机序
 
-// 1. htons 将 16 位无符号整数从主机序转为网络序 Host to Network Short
+// 1. htons 将 16 位无符号整数从主机序转为网络序
 uint16_t htons(uint16_t host_short);
 struct sockaddr_in addr;
 addr.sin_port = htons(8080); // 主机序 → 网络序
 
-// 2. htonl 将 32 位无符号整数从主机序转为网络序 Host to Network Long
+// 2. htonl 将 32 位无符号整数从主机序转为网络序
 uint32_t htonl(uint32_t host_long);
 addr.sin_addr.s_addr = htonl(INADDR_ANY); // 绑定所有接口
 
-// 3. ntohs 将 16 位无符号整数从网络序转为主机序 Network to Host Short
+// 3. ntohs 将 16 位无符号整数从网络序转为主机序
 uint16_t ntohs(uint16_t network_short);
 
-// 4. ntohl 将 32 位无符号整数从网络序转为主机序 Network to Host Long
+// 4. ntohl 将 32 位无符号整数从网络序转为主机序
 uint32_t ntohl(uint32_t network_long);
+```
+
+## 三. IP 地址转换函数
+- **`字符串 IP`**: `IPv4`点分十进制表示法，例如 `"192.168.1.1"`; `IPv6`冒号分隔的十六进制表示法，例如 `"2001:db8::1"`
+- **`二进制 IP`** 是计算机可处理的 `IP` 地址表示形式，通常用于网络协议和底层编程。`IPv4 32` 位无符号整数，例如 `0xC0A80101` 对应 `192.168.1.1`。`IPv6 128` 位无符号整数，例如 `0x20010db8000000000000000000000001` 对应 `2001:db8::1`
+```c
+// inet_pton 将字符串 IP 转换为二进制格式
+int inet_pton(int af, const char *src, void *dst);
+
+struct in_addr addr4;
+inet_pton(AF_INET, "192.168.1.1", &addr4);
+
+struct in6_addr addr6;
+inet_pton(AF_INET6, "2001:db8::1", &addr6);
+
+
+// inet_ntop 将二进制 IP 转换为字符串格式
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+
+struct in_addr addr4;
+char str[INET_ADDRSTRLEN];
+inet_ntop(AF_INET, &addr4, str, INET_ADDRSTRLEN);
+
+struct in6_addr addr6;
+char str[INET6_ADDRSTRLEN];
+inet_ntop(AF_INET6, &addr6, str, INET6_ADDRSTRLEN);
 ```

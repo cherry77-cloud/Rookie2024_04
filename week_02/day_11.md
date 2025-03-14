@@ -87,3 +87,34 @@ if (bytes_read == -1) {
 */
 ```
 ---
+
+## 四. `write()` 向文件写入数据
+- 将缓冲区数据写入文件描述符对应的文件。
+- 默认是阻塞的（如磁盘满时会等待）。
+
+```c
+#include <unistd.h>
+ssize_t write(int fd, const void *buf, size_t count);
+
+char data[] = "Hello, Unix I/O!";
+ssize_t bytes_written = write(fd, data, strlen(data));
+if (bytes_written == -1) {
+    perror("write failed");
+} else if (bytes_written < strlen(data)) {
+    printf("Partial write: %zd/%zu bytes written\n", bytes_written, strlen(data));
+}
+
+/*
+参数
+    同 read()，但 buf 是写入数据的来源。
+
+返回值
+    成功：返回实际写入的字节数（可能小于 count，如磁盘满或信号中断）。
+    失败：返回 -1，并设置 errno。
+
+注意
+    需处理部分写入的情况（循环写入直到所有数据写完）。
+    使用 O_APPEND 标志可避免并发写入时的覆盖问题。
+*/
+```
+---

@@ -270,6 +270,7 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 ---
 
 ```mermaid
+```mermaid
 graph TD
     subgraph Client
         A[socket()] --> B[connect()]
@@ -297,4 +298,5 @@ graph TD
     B -->|TCP Connection Request| K
     D -->|Send Data| O
     Q -->|Return Response| E
+```
 ```

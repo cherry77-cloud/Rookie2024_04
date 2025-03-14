@@ -269,7 +269,7 @@ shutdown(sockfd, SHUT_WR); // 关闭写端，发送 FIN 报文
 | `shutdown()`    | 半关闭连接          | `TCP`      | 优雅终止连接           |
 ---
 
-```mermaid
+
 ```mermaid
 graph TD
     subgraph Client

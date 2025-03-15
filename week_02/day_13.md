@@ -246,3 +246,107 @@ int main()
 ```
 
 ---
+
+## 四. 条件变量 `Condition Variable`
+- 条件变量`Condition Variable`是用于线程间状态通知的同步机制，通常与互斥量配合使用。它的核心功能是让线程在某个条件不满足时主动阻塞，并在条件可能满足时被唤醒，从而避免忙等待`Busy Waiting`，提升效率。典型应用场景包括生产者-消费者模型、任务队列调度等。
+- 线程检查某个共享状态（如队列是否为空），若不满足条件则阻塞。
+- 当其他线程修改了共享状态（如向队列添加数据），通过信号唤醒等待线程。
+- **虚假唤醒`Spurious Wakeup`**线程可能在没有收到明确信号时被唤醒，因此必须在循环中检查条件。
+
+### 核心函数
+- `pthread_cond_init()` 初始化条件变量，可设置属性（如进程间共享）。
+- `pthread_cond_wait()` 释放互斥锁并阻塞线程，等待条件变量被唤醒。
+- `pthread_cond_signal() 与 pthread_cond_broadcast()`
+  - `signal()` 唤醒至少一个等待线程。
+  - `broadcast()` 唤醒所有等待线程。
+- `pthread_cond_timedwait()` 带超时机制的等待，避免永久阻塞。
+- `pthread_cond_destroy()` 销毁条件变量，需确保无线程在等待。
+
+```c
+pthread_cond_t cond;
+pthread_cond_init(&cond, NULL);
+
+pthread_mutex_lock(&mutex);
+while (condition_not_met) {  // 必须用 while，不能用 if
+    pthread_cond_wait(&cond, &mutex);
+}
+// 条件满足后的操作
+pthread_mutex_unlock(&mutex);
+
+pthread_mutex_lock(&mutex);
+// 修改共享状态，使条件可能满足
+pthread_cond_signal(&cond);  // 或 broadcast()
+pthread_mutex_unlock(&mutex);
+```
+
+### 生产者-消费者模型
+```c
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define QUEUE_SIZE 5
+
+int queue[QUEUE_SIZE];
+int count = 0;  // 队列中元素数量
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond_producer = PTHREAD_COND_INITIALIZER;  // 生产者条件变量（队列未满）
+pthread_cond_t cond_consumer = PTHREAD_COND_INITIALIZER;  // 消费者条件变量（队列非空）
+
+// 生产者线程
+void* producer(void* arg)
+{
+    int item = 0;
+    while (1) {
+        pthread_mutex_lock(&mutex);
+        // 队列已满，等待消费者消费
+        while (count == QUEUE_SIZE) {
+            pthread_cond_wait(&cond_producer, &mutex);
+        }
+        // 生产数据
+        queue[count] = item;
+        printf("Producer: item %d added, queue size: %d\n", item, count + 1);
+        count++;
+        item++;
+        pthread_cond_signal(&cond_consumer);  // 通知消费者队列非空
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+// 消费者线程
+void* consumer(void* arg)
+{
+    while (1) {
+        pthread_mutex_lock(&mutex);
+        // 队列为空，等待生产者生产
+        while (count == 0) {
+            pthread_cond_wait(&cond_consumer, &mutex);
+        }
+        // 消费数据
+        int item = queue[count - 1];
+        count--;
+        printf("Consumer: item %d removed, queue size: %d\n", item, count);
+        pthread_cond_signal(&cond_producer);  // 通知生产者队列未满
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+int main()
+{
+    pthread_t prod, cons;
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+
+    pthread_cond_destroy(&cond_producer);
+    pthread_cond_destroy(&cond_consumer);
+    pthread_mutex_destroy(&mutex);
+    return 0;
+}
+```
+
+---

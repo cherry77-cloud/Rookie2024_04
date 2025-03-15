@@ -31,34 +31,67 @@ int main() {
 
 ---
 
-### 2. 共享内存 `Shared Memory`
+### 2. 匿名内存
 
-- 内存共享：多个进程映射同一物理内存区域，直接读写内存实现数据交换。
-- 同步需求：需配合信号量或互斥锁避免数据竞争。
+- 匿名性：内存区域不与任何文件关联，仅通过文件描述符或指针访问。
+- 亲缘进程：父进程创建匿名内存后，子进程通过 `fork()` 继承内存映射。
 
-- 实现步骤 `System V`
-  - 创建共享内存段：`shmget()` 分配共享内存。
-  - 附加到进程地址空间：`shmat()` 将共享内存映射到进程。
-  - 读写数据：直接操作共享内存指针。
-  - 释放资源：`shmdt()` 解除映射，`shmctl()` 删除内存段。
+#### 使用 `memfd_create` 系统调用
 
 ```c++
-#include <sys/shm.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <sys/wait.h>
+
+#define SIZE 4096
 
 int main() {
-    int shm_id = shmget(IPC_PRIVATE, 1024, IPC_CREAT | 0666);
-    char *shm_ptr = (char *)shmat(shm_id, NULL, 0);
+    // 创建匿名内存文件描述符
+    int fd = syscall(SYS_memfd_create, "anon_mem", MFD_CLOEXEC);
+    ftruncate(fd, SIZE); // 设置内存大小
+
+    // 映射到进程地址空间
+    char *ptr = mmap(NULL, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     pid_t pid = fork();
     if (pid == 0) {          // 子进程
-        sprintf(shm_ptr, "Data from child");
-        shmdt(shm_ptr);
+        sprintf(ptr, "Hello from child process!");
+        munmap(ptr, SIZE);   // 解除映射
+        close(fd);
+        _exit(0);
     } else {                 // 父进程
-        wait(NULL);          // 等待子进程完成
-        printf("Parent received: %s\n", shm_ptr);
-        shmdt(shm_ptr);
-        shmctl(shm_id, IPC_RMID, NULL); // 删除共享内存
+        wait(NULL);          // 等待子进程结束
+        printf("Parent received: %s\n", ptr);
+        munmap(ptr, SIZE);
+        close(fd);
+    }
+    return 0;
+}
+```
+
+#### 使用 `MAP_ANONYMOUS` 标志的 `mmap`
+```c++
+#include <sys/mman.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#define SIZE 4096
+
+int main() {
+    // 分配匿名共享内存
+    char *ptr = mmap(NULL, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    pid_t pid = fork();
+    if (pid == 0) {          // 子进程
+        sprintf(ptr, "Data written by child");
+        _exit(0);
+    } else {                 // 父进程
+        wait(NULL);          // 等待子进程结束
+        printf("Parent received: %s\n", ptr);
+        munmap(ptr, SIZE);
     }
     return 0;
 }
@@ -100,7 +133,7 @@ int main() {
 ```
 ---
 
-## 4. 本地套接字 `Unix Domain Socket`
+### 4. 本地套接字 `Unix Domain Socket`
 
 - 基于文件的套接字：通过文件路径标识，支持流式（`TCP-like`）或数据报（`UDP-like`）通信。
 - 高效通信：数据直接在进程间传递，无需网络协议栈。
@@ -136,6 +169,36 @@ int main() {
         close(connfd);
         unlink(SOCK_PATH);   // 删除套接字文件
     }
+    return 0;
+}
+```
+---
+
+### 5. 文件 `File`
+
+- 持久化存储：通过读写同一文件实现数据共享。
+- 文件锁：使用 `flock()` 或 `fcntl()` 避免并发冲突。
+
+```c++
+#include <fcntl.h>
+#include <sys/file.h>
+#include <stdio.h>
+
+int main() {
+    int fd = open("data.txt", O_RDWR | O_CREAT, 0666);
+    pid_t pid = fork();
+
+    if (pid == 0) {          // 子进程
+        flock(fd, LOCK_EX);  // 加独占锁
+        write(fd, "Child writes\n", 13);
+        flock(fd, LOCK_UN);
+    } else {                 // 父进程
+        flock(fd, LOCK_EX);
+        write(fd, "Parent writes\n", 14);
+        flock(fd, LOCK_UN);
+        wait(NULL);
+    }
+    close(fd);
     return 0;
 }
 ```

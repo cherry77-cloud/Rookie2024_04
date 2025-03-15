@@ -419,7 +419,6 @@ void *thread(void *vargp) {
 
 ### 3. 基于进程的并发服务器
 ```c++
-#include "csapp.h"
 void echo(int connfd);
 
 // SIGCHLD信号处理函数（回收僵尸进程）

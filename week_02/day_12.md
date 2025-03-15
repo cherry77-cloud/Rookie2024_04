@@ -81,3 +81,27 @@ int main() {
 }
 ```
 ---
+
+## 四. 线程属性函数
+
+- 线程属性对象（`pthread_attr_t`）用于定制线程的初始状态（如分离状态、栈大小、调度策略等）
+```c
+#include <pthread.h>
+int pthread_attr_init(pthread_attr_t *attr);    // 初始化属性对象
+int pthread_attr_destroy(pthread_attr_t *attr); // 销毁属性对象
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize);
+int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy); // 策略：SCHED_FIFO, SCHED_RR
+int pthread_attr_setschedparam(pthread_attr_t *attr, const struct sched_param *param);
+
+// 创建分离线程
+pthread_attr_t attr;
+pthread_attr_init(&attr);
+pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+pthread_t tid;
+pthread_create(&tid, &attr, thread_func, NULL);
+pthread_attr_destroy(&attr);
+```
+
+---

@@ -157,3 +157,92 @@ int main()
 ```
 
 ---
+## 三. 信号量 `Semaphore`
+- 信号量 `Semaphore` 是一种更通用的同步机制，用于控制对有限数量资源的并发访问。与互斥量（仅保护单个资源）不同，信号量可以管理多个相同类型的资源（如线程池、数据库连接池）。它基于经典的 `PV`操作，是解决多线程/进程同步问题的核心工具之一。
+- 计数器机制：信号量维护一个整数值，表示可用资源数量。
+  - 正数：表示当前可用资源数。
+  - 零或负数：绝对值表示等待资源的线程/进程数。
+- 原子操作：
+  - `P` 操作 (`sem_wait`)：请求资源，若计数器 `> 0` 则减`1`，否则阻塞。
+  - `V` 操作 (`sem_post`)：释放资源，计数器加`1`，并唤醒等待线程。
+- 类型：
+  - 二进制信号量：计数器值只能是 0 或 1，等同于互斥锁。
+  - 计数信号量：计数器值可大于 1，用于管理多个资源。
+
+### 核心函数
+- `sem_init()` 初始化未命名的信号量。
+- `sem_wait()`
+  - 功能：执行 `P` 操作，请求资源。若资源不足（计数器 `≤ 0`），线程阻塞。
+  - 非阻塞版本：`sem_trywait()` 立即返回错误，`sem_timedwait()` 支持超时等待。
+- `sem_post()` 执行 `V` 操作，释放资源，计数器加`1`，并唤醒一个等待线程。
+- `sem_destroy()` 销毁信号量，释放内核资源。需确保无线程等待信号量。
+
+### 生产者-消费者模型（有限缓冲区）
+```c
+#include <semaphore.h>
+#include <pthread.h>
+#include <stdio.h>
+
+#define BUFFER_SIZE 5
+
+int buffer[BUFFER_SIZE];
+sem_t empty;   // 空槽位信号量（初始为缓冲区大小）
+sem_t full;    // 已填充槽位信号量（初始为0）
+pthread_mutex_t mutex;  // 互斥量保护缓冲区操作
+
+void* producer(void* arg)
+{
+    int item = 0;
+    while (1) {
+        sem_wait(&empty);          // 等待空槽位（P操作）
+        pthread_mutex_lock(&mutex); 
+
+        // 生产数据到缓冲区
+        buffer[item % BUFFER_SIZE] = item;
+        printf("Producer: item %d\n", item);
+        item++;
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&full);           // 增加已用槽位（V操作）
+    }
+    return NULL;
+}
+
+void* consumer(void* arg)
+{
+    int item;
+    while (1) {
+        sem_wait(&full);           // 等待已填充槽位（P操作）
+        pthread_mutex_lock(&mutex);
+
+        // 消费缓冲区数据
+        item = buffer[item % BUFFER_SIZE];
+        printf("Consumer: item %d\n", item);
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&empty);          // 释放空槽位（V操作）
+    }
+    return NULL;
+}
+
+int main()
+{
+    pthread_t prod, cons;
+    sem_init(&empty, 0, BUFFER_SIZE);  // 初始空槽位=5
+    sem_init(&full, 0, 0);            // 初始已用槽位=0
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    pthread_mutex_destroy(&mutex);
+    return 0;
+}
+```
+
+---

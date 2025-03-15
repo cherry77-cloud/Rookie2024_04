@@ -210,7 +210,6 @@ int chown(const char *pathname, uid_t owner, gid_t group);
 ```
 
 ### 3. `access()` 检查文件权限
-- 检查当前进程对文件的访问权限。
 ```c
 #include <unistd.h>
 int access(const char *pathname, int mode);
@@ -358,7 +357,6 @@ struct dirent *readdir(DIR *dirp);
 ```
 
 ### 3. `closedir()` 关闭目录流
-- 关闭目录流，释放资源。
 ```c
 #include <dirent.h>
 int closedir(DIR *dirp);
@@ -582,3 +580,36 @@ int fcntl(int fd, int cmd, ... /* arg */ );
 | **`F_SETLK`**  | 设置或释放文件锁                           | `fcntl(fd, F_SETLK, &flock);`                                         |
 | **`F_SETLKW`** | 设置文件锁                                              | `fcntl(fd, F_SETLKW, &flock);`                                        |
 | **`F_GETLK`**  | 检查锁是否可用                          | `fcntl(fd, F_GETLK, &flock);`                                         |
+
+---
+
+#### 核心功能详解
+- 复制文件描述符 `F_DUPFD`
+- 修改文件状态标志 `F_GETFL / F_SETFL`
+- 文件锁管理 `F_SETLK / F_SETLKW`
+```c
+int new_fd = fcntl(old_fd, F_DUPFD, 10);
+
+int flags = fcntl(fd, F_GETFL);
+fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+struct flock {
+    short l_type;   // 锁类型（F_RDLCK, F_WRLCK, F_UNLCK）
+    short l_whence; // 锁的起始位置（SEEK_SET, SEEK_CUR, SEEK_END）
+    off_t l_start;  // 锁的起始偏移
+    off_t l_len;    // 锁的字节长度（0 表示到文件末尾）
+    pid_t l_pid;    // 持有锁的进程 ID（由 F_GETLK 填充）
+};
+
+struct flock fl = {
+    .l_type = F_WRLCK,    // 写锁
+    .l_whence = SEEK_SET, // 从文件头开始
+    .l_start = 0,         // 起始偏移
+    .l_len = 100          // 锁住 100 字节
+};
+
+// 尝试加锁（非阻塞）
+if (fcntl(fd, F_SETLK, &fl) == -1) {
+    perror("加锁失败");
+}
+```

@@ -1,4 +1,9 @@
-## 一. 线程创建函数 `pthread_create`
+## 一. 线程核心知识
+- 线程是操作系统能够进行运算调度的最小单位，被包含在进程之中，是进程的实际执行单元。一个进程可以包含多个线程，所有线程共享进程的资源（如内存、文件句柄等），但每个线程拥有独立的执行栈和程序计数器。
+
+
+---
+## 二. 线程创建函数 `pthread_create`
 
 - 创建一个新线程并执行指定的函数。
 
@@ -33,7 +38,7 @@ int main()
 ```
 ---
 
-## 二. 线程等待函数 `pthread_join`
+## 三. 线程等待函数 `pthread_join`
 - 阻塞当前线程，直到目标线程结束，并获取其返回值。
 
 ```c
@@ -61,7 +66,7 @@ int main()
 ```
 ---
 
-## 三. 线程分离函数 `pthread_detach`
+## 四. 线程分离函数 `pthread_detach`
 - 将线程标记为分离状态，线程结束后自动释放资源（无需 `pthread_join`）
 
 ```c
@@ -83,7 +88,7 @@ int main()
 ```
 ---
 
-## 四. 线程属性函数
+## 五. 线程属性函数
 
 - 线程属性对象（`pthread_attr_t`）用于定制线程的初始状态（如分离状态、栈大小、调度策略等）
 ```c
@@ -106,7 +111,7 @@ pthread_attr_destroy(&attr);
 ```
 
 ---
-## 五. `pthread_exit` 显式终止当前线程
+## 六. `pthread_exit` 显式终止当前线程
 
 - 终止调用它的线程，并返回一个值（`retval`）给调用 `pthread_join` 的线程。
 - 如果线程未分离（`detached`），必须由其他线程调用 `pthread_join` 回收其资源。
@@ -137,7 +142,7 @@ int main()
 
 ---
 
-## 六. `pthread_cancel` 请求终止目标线程
+## 七. `pthread_cancel` 请求终止目标线程
 
 - 向目标线程发送取消请求，目标线程需在取消点（`cancellation point`）响应请求。
 - 线程可设置取消状态（`enabled/disabled`）和取消类型（`deferred/asynchronous`）
@@ -182,7 +187,7 @@ int main()
 
 ---
 
-## 七. 总结
+## 八. 总结
 
 ### 1. `pthread_exit vs pthread_cancel`
 
@@ -206,5 +211,4 @@ int main()
 pthread_t pthread_self(void);                   // 返回当前线程的线程 ID
 int pthread_equal(pthread_t t1, pthread_t t2);  // 比较两个线程 ID 是否相等
 ```
-
 ---

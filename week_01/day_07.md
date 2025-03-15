@@ -334,3 +334,123 @@ int main() {
 | **内核实现**           | 轮询扫描所有文件描述符                 | 轮询扫描所有文件描述符                 | 回调机制，仅处理活跃文件描述符        |
 | **内存拷贝开销**       | 每次调用需全量拷贝事件集合             | 每次调用需全量拷贝事件集合             | 首次注册后零拷贝                     |
 | **适用场景**           | 低并发、跨平台兼容                     | 中低并发、需更多文件描述符             | 高并发、`Linux` 环境、活动连接较少       |
+
+---
+
+## 四. 并发编程
+### 基于`select`的事件驱动服务器
+```c++
+void echo(int connfd);
+void command(void);
+
+int main(int argc, char **argv) {
+    int listenfd, connfd;
+    socklen_t clientlen;
+    struct sockaddr_storage clientaddr;
+    fd_set read_set, ready_set;
+
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s <port>'\n", argv[0]);
+        exit(0);
+    }
+    listenfd = Open_listenfd(argv[1]);
+
+    FD_ZERO(&read_set);          // 清空读集合
+    FD_SET(STDIN_FILENO, &read_set); // 添加标准输入到读集合
+    FD_SET(listenfd, &read_set);     // 添加监听套接字到读集合
+
+    while (1) {
+        ready_set = read_set;
+        Select(listenfd + 1, &ready_set, NULL, NULL, NULL);
+        if (FD_ISSET(STDIN_FILENO, &ready_set))
+            command(); // 处理控制台输入
+        if (FD_ISSET(listenfd, &ready_set)) {
+            clientlen = sizeof(struct sockaddr_storage);
+            connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+            echo(connfd); // 处理客户端请求
+            Close(connfd);
+        }
+    }
+}
+
+void command(void) {
+    char buf[MAXLINE];
+    if (!Fgets(buf, MAXLINE, stdin))
+        exit(0);    // EOF时退出
+    printf("%s", buf); // 处理命令（示例中仅打印）
+}
+```
+
+### 2. 基于线程的并发服务器
+```c++
+void echo(int connfd);
+void *thread(void *vargp);
+
+int main(int argc, char **argv) {
+    int listenfd, *connfdp;
+    socklen_t clientlen;
+    struct sockaddr_storage clientaddr;
+    pthread_t tid;
+
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s <port>\n", argv[0]);
+        exit(0);
+    }
+    listenfd = Open_listenfd(argv[1]);
+
+    while (1) {
+        clientlen = sizeof(struct sockaddr_storage);
+        connfdp = Malloc(sizeof(int)); // 动态分配连接描述符的内存
+        *connfdp = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+        Pthread_create(&tid, NULL, thread, connfdp); // 创建线程处理请求
+    }
+}
+
+// 线程函数
+void *thread(void *vargp) {
+    int connfd = *((int *)vargp);
+    Pthread_detach(pthread_self()); // 线程分离（无需显式回收）
+    Free(vargp);                    // 释放动态分配的内存
+    echo(connfd);                   // 处理客户端请求
+    Close(connfd);                  // 关闭连接
+    return NULL;
+}
+```
+
+### 3. 基于进程的并发服务器
+```c++
+#include "csapp.h"
+void echo(int connfd);
+
+// SIGCHLD信号处理函数（回收僵尸进程）
+void sigchild_handler(int sig) {
+    while (waitpid(-1, 0, WNOHANG) > 0);
+    return;
+}
+
+int main(int argc, char **argv) {
+    int listenfd, connfd;
+    socklen_t clientlen;
+    struct sockaddr_storage clientaddr;
+
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s <port>\n", argv[0]);
+        exit(0);
+    }
+
+    Signal(SIGCHLD, sigchild_handler); // 注册信号处理函数
+    listenfd = Open_listenfd(argv[1]);
+
+    while (1) {
+        clientlen = sizeof(struct sockaddr_storage);
+        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+        if (Fork() == 0) {           // 子进程分支
+            Close(listenfd);         // 子进程关闭监听套接字
+            echo(connfd);            // 处理客户端请求
+            Close(connfd);           // 关闭连接
+            exit(0);                 // 子进程退出
+        }
+        Close(connfd);               // 父进程关闭连接描述符（避免资源泄漏）
+    }
+}
+```

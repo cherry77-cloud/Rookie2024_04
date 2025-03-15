@@ -1,4 +1,5 @@
 ## 亲缘进程间通信方式
+
 ### 1. 匿名管道 `Anonymous Pipe`
 
 - 单向通信：通过 `pipe()` 创建一对文件描述符（`fd[0]` 读端，`fd[1]` 写端），数据从写端流向读端。
@@ -127,47 +128,6 @@ int main() {
         sleep(1);            // 确保子进程注册完成
         kill(pid, SIGUSR1);  // 发送信号
         wait(NULL);
-    }
-    return 0;
-}
-```
----
-
-### 4. 本地套接字 `Unix Domain Socket`
-
-- 基于文件的套接字：通过文件路径标识，支持流式（`TCP-like`）或数据报（`UDP-like`）通信。
-- 高效通信：数据直接在进程间传递，无需网络协议栈。
-- 实现步骤（流式套接字）
-  - 服务端：创建套接字 → 绑定地址 → 监听 → 接受连接。
-  - 客户端：创建套接字 → 连接服务端 → 发送/接收数据。
-```c++
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <stdio.h>
-
-#define SOCK_PATH "/tmp/example.sock"
-
-int main() {
-    int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-    struct sockaddr_un addr = {.sun_family = AF_UNIX};
-    strcpy(addr.sun_path, SOCK_PATH);
-
-    bind(sockfd, (struct sockaddr *)&addr, sizeof(addr));
-    listen(sockfd, 5);
-
-    pid_t pid = fork();
-    if (pid == 0) {          // 子进程（客户端）
-        int connfd = socket(AF_UNIX, SOCK_STREAM, 0);
-        connect(connfd, (struct sockaddr *)&addr, sizeof(addr));
-        write(connfd, "Hello from child", 16);
-        close(connfd);
-    } else {                 // 父进程（服务端）
-        int connfd = accept(sockfd, NULL, NULL);
-        char buf[100];
-        read(connfd, buf, sizeof(buf));
-        printf("Parent received: %s\n", buf);
-        close(connfd);
-        unlink(SOCK_PATH);   // 删除套接字文件
     }
     return 0;
 }

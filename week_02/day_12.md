@@ -73,7 +73,8 @@ void* thread_func(void *arg)
     return NULL;
 }
 
-int main() {
+int main()
+{
     pthread_t tid;
     pthread_create(&tid, NULL, thread_func, NULL);
     pthread_detach(tid); // 线程结束后自动回收资源
@@ -102,6 +103,36 @@ pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 pthread_t tid;
 pthread_create(&tid, &attr, thread_func, NULL);
 pthread_attr_destroy(&attr);
+```
+
+---
+## 五. `pthread_exit` 显式终止当前线程
+
+- 终止调用它的线程，并返回一个值（`retval`）给调用 `pthread_join` 的线程。
+- 如果线程未分离（`detached`），必须由其他线程调用 `pthread_join` 回收其资源。
+- 在线程函数中主动退出。
+- 主线程调用 `pthread_exit` 后，进程不会终止，直到所有线程完成。
+
+```c
+void pthread_exit(void *retval);
+
+void* thread_func(void* arg)
+{
+    printf("chid thread running ...\n");
+    pthread_exit((void*)42); // 显式退出并返回值 42
+}
+
+int main()
+{
+    pthread_t tid;
+    pthread_create(&tid, NULL, thread_func, NULL);
+    
+    void* retval;
+    pthread_join(tid, &retval); // 等待线程结束并获取返回值
+    printf("%ld\n", (long)retval); // 输出 42
+    
+    return 0;
+}
 ```
 
 ---

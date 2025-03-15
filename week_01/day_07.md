@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
     }
     listenfd = Open_listenfd(argv[1]);
 
-    FD_ZERO(&read_set);          // 清空读集合
+    FD_ZERO(&read_set);              // 清空读集合
     FD_SET(STDIN_FILENO, &read_set); // 添加标准输入到读集合
     FD_SET(listenfd, &read_set);     // 添加监听套接字到读集合
 
@@ -363,11 +363,11 @@ int main(int argc, char **argv) {
         ready_set = read_set;
         Select(listenfd + 1, &ready_set, NULL, NULL, NULL);
         if (FD_ISSET(STDIN_FILENO, &ready_set))
-            command(); // 处理控制台输入
+            command();     // 处理控制台输入
         if (FD_ISSET(listenfd, &ready_set)) {
             clientlen = sizeof(struct sockaddr_storage);
             connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-            echo(connfd); // 处理客户端请求
+            echo(connfd);  // 处理客户端请求
             Close(connfd);
         }
     }
@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
 void command(void) {
     char buf[MAXLINE];
     if (!Fgets(buf, MAXLINE, stdin))
-        exit(0);    // EOF时退出
+        exit(0);       // EOF时退出
     printf("%s", buf); // 处理命令（示例中仅打印）
 }
 ```
@@ -400,9 +400,9 @@ int main(int argc, char **argv) {
 
     while (1) {
         clientlen = sizeof(struct sockaddr_storage);
-        connfdp = Malloc(sizeof(int)); // 动态分配连接描述符的内存
+        connfdp = Malloc(sizeof(int));                   // 动态分配连接描述符的内存
         *connfdp = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-        Pthread_create(&tid, NULL, thread, connfdp); // 创建线程处理请求
+        Pthread_create(&tid, NULL, thread, connfdp);     // 创建线程处理请求
     }
 }
 
@@ -438,7 +438,7 @@ int main(int argc, char **argv) {
         exit(0);
     }
 
-    Signal(SIGCHLD, sigchild_handler); // 注册信号处理函数
+    Signal(SIGCHLD, sigchild_handler);   // 注册信号处理函数
     listenfd = Open_listenfd(argv[1]);
 
     while (1) {

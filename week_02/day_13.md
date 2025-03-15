@@ -69,3 +69,91 @@ pthread_mutex_unlock(&mutex);
 ```
 
 ---
+
+## 二. 读写锁 `Read-Write Lock`
+- 读写锁`Read-Write Lock`是一种 细粒度锁，允许多个线程同时读取共享资源，但写操作必须独占访问。这种锁特别适用于读多写少的场景（例如缓存系统、配置文件读取），能显著提高并发性能。
+- 读共享 `Shared Read` 多个线程可同时持有读锁，但此时禁止写操作。
+- 写独占 `Exclusive Write` 写锁被持有时，禁止其他线程读或写。
+- 某些实现中，写锁请求优先于读锁，防止“写者饥饿”问题。
+
+### 核心函数
+- `pthread_rwlock_init()` 初始化读写锁，可设置属性（如是否支持优先级继承）
+- `pthread_rwlock_rdlock()` 获取读锁（共享锁），允许其他读线程继续获取读锁。
+- `pthread_rwlock_wrlock()` 获取写锁（独占锁），禁止其他线程读或写。
+- `pthread_rwlock_tryrdlock() 与 pthread_rwlock_trywrlock()` 非阻塞尝试获取读/写锁，失败立即返回 `EBUSY`。
+- `pthread_rwlock_unlock()` 释放读写锁（无论是读锁还是写锁）。
+- `pthread_rwlock_destroy()` 销毁读写锁，释放资源。需确保无线程持有或等待锁。
+
+### 通过 `pthread_rwlockattr_t` 可定制读写锁行为，例如设置写者优先级
+```c
+pthread_rwlockattr_t attr;
+pthread_rwlockattr_init(&attr);
+pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);  // 写者优先
+pthread_rwlock_init(&rwlock, &attr);
+```
+
+```c
+#include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int shared_data = 0;      // 共享数据
+pthread_rwlock_t rwlock;  // 读写锁
+
+// 读线程：读取共享数据
+void* reader(void* arg)
+{
+    int id = *(int*)arg;
+    for (int i = 0; i < 5; i++) {
+        pthread_rwlock_rdlock(&rwlock);  // 获取读锁（共享）
+        printf("Reader %d reads data: %d\n", id, shared_data);
+        pthread_rwlock_unlock(&rwlock);  // 释放读锁
+        sleep(1);  // 模拟耗时操作
+    }
+    return NULL;
+}
+
+// 写线程：修改共享数据
+void* writer(void* arg)
+{
+    int id = *(int*)arg;
+    for (int i = 0; i < 3; i++) {
+        pthread_rwlock_wrlock(&rwlock);  // 获取写锁（独占）
+        shared_data++;
+        printf("Writer %d writes data: %d\n", id, shared_data);
+        pthread_rwlock_unlock(&rwlock);  // 释放写锁
+        sleep(2);  // 模拟耗时操作
+    }
+    return NULL;
+}
+
+int main()
+{
+    pthread_t readers[3], writers[2];
+    int reader_ids[] = {1, 2, 3};
+    int writer_ids[] = {1, 2};
+
+    pthread_rwlock_init(&rwlock, NULL);
+
+    // 创建 3 个读线程和 2 个写线程
+    for (int i = 0; i < 3; i++) {
+        pthread_create(&readers[i], NULL, reader, &reader_ids[i]);
+    }
+    for (int i = 0; i < 2; i++) {
+        pthread_create(&writers[i], NULL, writer, &writer_ids[i]);
+    }
+
+    // 等待所有线程结束
+    for (int i = 0; i < 3; i++) {
+        pthread_join(readers[i], NULL);
+    }
+    for (int i = 0; i < 2; i++) {
+        pthread_join(writers[i], NULL);
+    }
+
+    pthread_rwlock_destroy(&rwlock);
+    return 0;
+}
+```
+
+---

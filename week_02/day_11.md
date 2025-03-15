@@ -529,7 +529,7 @@ close(fd); // 关闭原 fd，因为 STDOUT_FILENO 已指向文件
     失败：返回 -1，并设置 errno。
 */
 ```
-- 标准文件描述符
+#### 标准文件描述符
 
 | 文件描述符 | 名称           | 默认设备       | 宏定义常量         |
 |------------|----------------|----------------|--------------------|
@@ -542,6 +542,8 @@ close(fd); // 关闭原 fd，因为 STDOUT_FILENO 已指向文件
 - 共享文件偏移量和状态标志：复制后的描述符共享文件偏移量和状态标志（如 `O_APPEND`）。
 - `dup` 自动分配最小可用文件描述符。
 - `dup2` 可以指定目标文件描述符，若目标已打开则先关闭它。
+
+#### 核心区别
 
 | 特性                | `dup()`                         | `dup2()`                         |
 |---------------------|----------------------------------|----------------------------------|
@@ -572,11 +574,11 @@ int fcntl(int fd, int cmd, ... /* arg */ );
 
 | **命令**       | **功能**                                                                 | **示例**                                                                 |
 |----------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| **`F_DUPFD`**  | 复制文件描述符，返回 ≥ 指定值的最小可用 FD（类似 `dup`，但可控制最小 FD）。          | `int new_fd = fcntl(fd, F_DUPFD, 10);`                    |
-| **`F_GETFD`**  | 获取文件描述符的标志（如 `FD_CLOEXEC`）。                                   | `int flags = fcntl(fd, F_GETFD);`                                      |
-| **`F_SETFD`**  | 设置文件描述符的标志（如 `FD_CLOEXEC`，进程 `exec` 时自动关闭 FD）。          | `fcntl(fd, F_SETFD, FD_CLOEXEC);`                                      |
-| **`F_GETFL`**  | 获取文件状态标志（如 `O_RDONLY`、`O_NONBLOCK`、`O_APPEND` 等）。           | `int flags = fcntl(fd, F_GETFL);`                                      |
-| **`F_SETFL`**  | 设置文件状态标志（如启用非阻塞模式或追加模式）。                                | `fcntl(fd, F_SETFL, flags \| O_NONBLOCK);`                             |
-| **`F_SETLK`**  | 设置或释放文件锁（非阻塞，需配合 `struct flock`）。                           | `fcntl(fd, F_SETLK, &flock);`                                         |
-| **`F_SETLKW`** | 设置文件锁（阻塞，直到锁可用）。                                              | `fcntl(fd, F_SETLKW, &flock);`                                        |
-| **`F_GETLK`**  | 检查锁是否可用（不实际加锁，返回当前锁信息）。                                  | `fcntl(fd, F_GETLK, &flock);`                                         |
+| **`F_DUPFD`**  | 复制文件描述符，返回 ≥ 指定值的最小可用 FD          | `int new_fd = fcntl(fd, F_DUPFD, 10);`                    |
+| **`F_GETFD`**  | 获取文件描述符的标志                                  | `int flags = fcntl(fd, F_GETFD);`                                      |
+| **`F_SETFD`**  | 设置文件描述符的标志。          | `fcntl(fd, F_SETFD, FD_CLOEXEC);`                                      |
+| **`F_GETFL`**  | 获取文件状态标志           | `int flags = fcntl(fd, F_GETFL);`                                      |
+| **`F_SETFL`**  | 设置文件状态标志                                | `fcntl(fd, F_SETFL, flags \| O_NONBLOCK);`                             |
+| **`F_SETLK`**  | 设置或释放文件锁                           | `fcntl(fd, F_SETLK, &flock);`                                         |
+| **`F_SETLKW`** | 设置文件锁                                              | `fcntl(fd, F_SETLKW, &flock);`                                        |
+| **`F_GETLK`**  | 检查锁是否可用                          | `fcntl(fd, F_GETLK, &flock);`                                         |

@@ -379,3 +379,107 @@ int closedir(DIR *dirp);
 #include <dirent.h>
 void rewinddir(DIR *dirp);
 ```
+
+### 5. 目录相关结构体
+
+#### `struct dirent` 目录项信息
+存储单个目录项的信息（不同系统可能扩展字段，但以下字段是通用的）
+```c
+#include <dirent.h>
+struct dirent {
+    ino_t          d_ino;       // 文件的 inode 号
+    off_t          d_off;       // 目录项在目录流中的偏移（非 POSIX 标准）
+    unsigned short d_reclen;    // 目录项记录长度
+    unsigned char  d_type;      // 文件类型（如 DT_REG、DT_DIR）
+    char           d_name[256]; // 文件名（以空字符结尾）
+};
+
+/*
+d_type：文件类型标志（需检查系统是否支持
+    DT_REG：普通文件。
+    DT_DIR：目录。
+    DT_LNK：符号链接。
+    DT_FIFO：管道文件。
+    DT_SOCK：套接字文件。
+    DT_CHR：字符设备文件。
+    DT_BLK：块设备文件。
+    DT_UNKNOWN：未知类型。
+*/
+```
+
+#### `DIR` 结构体
+- 定义：表示目录流的句柄（内部实现依赖操作系统，用户无需关心其具体字段）。
+- 用途：通过 `opendir()` 获取，用于后续的 `readdir()` 和 `closedir()` 操作。
+
+```c
+// Linux 中 DIR 结构体的典型定义: 来自 glibc 的实现
+struct __dirstream {
+    int fd;                       // 目录文件的文件描述符
+    off_t tell;                   // 当前读取位置
+    size_t buf_size;              // 缓冲区大小
+    size_t allocation;            // 分配的空间大小
+    size_t size;                  // 有效数据大小
+    off_t filepos;                // 文件位置
+    char *data;                   // 数据缓冲区
+    unsigned short int offset;    // 当前读取偏移
+    unsigned short int code;      // 错误码
+};
+
+typedef struct __dirstream DIR;
+```
+
+```c
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int getFileNum(const char * path);
+
+int main(int argc, char * argv[]) 
+{
+    if (argc < 2) {
+        printf("%s path\n", argv[0]);
+        return -1;
+    }
+    int num = getFileNum(argv[1]);
+    printf("%d\n", num);
+    return 0;
+}
+
+int getFileNum(const char * path) 
+{
+    DIR * dir = opendir(path);
+    if (dir == NULL) {
+        perror("opendir");
+        exit(0);
+    }
+    struct dirent *ptr;
+    int total = 0;
+    while ((ptr = readdir(dir)) != NULL) {
+        char * dname = ptr->d_name;
+        if (strcmp(dname, ".") == 0 || strcmp(dname, "..") == 0) {
+            continue;
+        }
+        if (ptr->d_type == DT_DIR) {
+            char newpath[256];
+            sprintf(newpath, "%s/%s", path, dname);
+            total += getFileNum(newpath);
+        }
+        if (ptr->d_type == DT_REG) {
+            total++;
+        }
+    }
+    closedir(dir);
+    return total;
+}
+```
+
+- `opendir()`、`readdir()`、`closedir()` 目录遍历的基本工具。
+- `rewinddir()` 重置目录流位置。
+- `DIR` 目录流的句柄。
+- `struct dirent` 存储目录项的名称、类型等元数据。
+- 实现类似 `ls` 的目录列表功能。递归遍历文件树（如统计文件数量、搜索文件）。
+
+---

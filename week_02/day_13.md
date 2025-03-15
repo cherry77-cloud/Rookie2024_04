@@ -350,3 +350,54 @@ int main()
 ```
 
 ---
+
+## 五. 自旋锁 `Spinlock`
+- 自旋锁`Spinlock`是一种忙等待锁，当线程尝试获取锁时，若锁已被占用，线程会持续循环检查锁的状态（“自旋”），直到锁被释放。与互斥量不同，自旋锁不会让线程进入睡眠状态，因此 避免了上下文切换的开销，但会占用 `CPU` 资源。它适用于极短临界区且多核`CPU`的场景（如内核中断处理、高频无阻塞操作）。
+- 忙等待 (`Busy Waiting`)：线程在等待锁时持续占用 `CPU`，不释放执行权。
+- 无调度开销：不涉及线程阻塞和唤醒，适合极短临界区。
+- 多核优化：在单核 `CPU` 上无意义（自旋时其他线程无法运行）。
+- 不可递归：同一线程重复加锁会导致死锁（除非实现支持递归自旋锁）。
+
+### `POSIX` 自旋锁函数
+- `pthread_spin_init()`	初始化自旋锁，可设置进程共享属性。
+- `pthread_spin_destroy()`	销毁自旋锁。
+- `pthread_spin_lock()`	阻塞式加锁，若锁被占用则自旋等待。
+- `pthread_spin_trylock()`	非阻塞尝试加锁，失败立即返回错误。
+- `pthread_spin_unlock()`	释放锁。
+
+```c
+// 自旋锁是高性能场景下的利器，但需严格把控使用条件：短临界区、多核环境、无阻塞操作
+#include <pthread.h>
+#include <stdio.h>
+
+int counter = 0;
+pthread_spinlock_t spinlock;
+
+void* increment(void* arg)
+{
+    for (int i = 0; i < 100000; ++i) {
+        pthread_spin_lock(&spinlock);  // 自旋等待
+        counter++;
+        pthread_spin_unlock(&spinlock);
+    }
+    return NULL;
+}
+
+int main()
+{
+    pthread_t t1, t2;
+    pthread_spin_init(&spinlock, PTHREAD_PROCESS_PRIVATE);  // 初始化自旋锁
+
+    pthread_create(&t1, NULL, increment, NULL);
+    pthread_create(&t2, NULL, increment, NULL);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    printf("Final counter: %d\n", counter);  // 正确输出 200000
+    pthread_spin_destroy(&spinlock);
+    return 0;
+}
+```
+
+---

@@ -356,3 +356,26 @@ struct dirent *readdir(DIR *dirp);
     失败或到达目录末尾：返回 NULL（需用 errno 区分错误）。
 */
 ```
+
+### 3. `closedir()` 关闭目录流
+- 关闭目录流，释放资源。
+```c
+#include <dirent.h>
+int closedir(DIR *dirp);
+
+/*
+参数
+    dirp 为目录流指针。
+返回值
+    成功：返回 0。
+    失败：返回 -1，并设置 errno。
+*/
+```
+
+### 4. `rewinddir()` 重置目录流位置
+- 将目录流的读取位置重置到开头。
+
+```c
+#include <dirent.h>
+void rewinddir(DIR *dirp);
+```

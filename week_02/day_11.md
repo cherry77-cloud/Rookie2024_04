@@ -177,7 +177,7 @@ S_IXOTH  // 其他用户执行权限（0001）
 
 ## 七. 文件属性操作函数
 
-### `chmod()` 修改文件权限
+### 1. `chmod()` 修改文件权限
 - 修改文件的权限位（`mode`），如 `rwxr-xr--`。
 
 ```c
@@ -192,7 +192,7 @@ int chmod(const char *pathname, mode_t mode);
 */
 ```
 
-### `chown()`修改文件所有者和组
+### 2. `chown()`修改文件所有者和组
 
 - 修改文件的所有者用户 `ID（uid）`和组 `ID（gid）`。
 
@@ -209,7 +209,7 @@ int chown(const char *pathname, uid_t owner, gid_t group);
 */
 ```
 
-### `access()` 检查文件权限
+### 3. `access()` 检查文件权限
 - 检查当前进程对文件的访问权限。
 ```c
 #include <unistd.h>
@@ -224,7 +224,7 @@ mode：
 */
 ```
 
-### `truncate()` 和 `ftruncate()` 修改文件大小
+### 4. `truncate()` 和 `ftruncate()` 修改文件大小
 ```c
 #include <unistd.h>
 int truncate(const char *pathname, off_t length);   // 通过路径
@@ -552,3 +552,31 @@ close(fd); // 关闭原 fd，因为 STDOUT_FILENO 已指向文件
 - `dup2` 可以指定目标文件描述符，若目标已打开则先关闭它。
 
 ---
+
+### 3. `fcntl()`
+```c
+#include <unistd.h>
+#include <fcntl.h>
+
+int fcntl(int fd, int cmd, ... /* arg */ );
+
+/*
+参数：
+    fd：目标文件描述符。
+    cmd：控制命令（如 F_DUPFD, F_GETFL, F_SETFL 等）。
+    arg：可选参数，具体取决于 cmd。
+返回值：
+    成功：返回值取决于 cmd（如复制 FD 时返回新 FD）。
+    失败：返回 -1，并设置 errno。
+*/
+```
+
+|----------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| **`F_DUPFD`**  | 复制文件描述符，返回 ≥ 指定值的最小可用 FD（类似 `dup`，但可控制最小 FD）。          | `int new_fd = fcntl(fd, F_DUPFD, 10);`                    |
+| **`F_GETFD`**  | 获取文件描述符的标志（如 `FD_CLOEXEC`）。                                   | `int flags = fcntl(fd, F_GETFD);`                                      |
+| **`F_SETFD`**  | 设置文件描述符的标志（如 `FD_CLOEXEC`，进程 `exec` 时自动关闭 FD）。          | `fcntl(fd, F_SETFD, FD_CLOEXEC);`                                      |
+| **`F_GETFL`**  | 获取文件状态标志（如 `O_RDONLY`、`O_NONBLOCK`、`O_APPEND` 等）。           | `int flags = fcntl(fd, F_GETFL);`                                      |
+| **`F_SETFL`**  | 设置文件状态标志（如启用非阻塞模式或追加模式）。                                | `fcntl(fd, F_SETFL, flags \| O_NONBLOCK);`                             |
+| **`F_SETLK`**  | 设置或释放文件锁（非阻塞，需配合 `struct flock`）。                           | `fcntl(fd, F_SETLK, &flock);`                                         |
+| **`F_SETLKW`** | 设置文件锁（阻塞，直到锁可用）。                                              | `fcntl(fd, F_SETLKW, &flock);`                                        |
+| **`F_GETLK`**  | 检查锁是否可用（不实际加锁，返回当前锁信息）。                                  | `fcntl(fd, F_GETLK, &flock);`                                         |

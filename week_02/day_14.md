@@ -235,3 +235,41 @@ read(sockfd, buf, sizeof(buf));
 ```
 
 ---
+
+### 5. `mmap`
+- `mmap`（`Memory Mapping`，内存映射）是操作系统提供的一种高效内存管理机制，允许将文件或设备直接映射到进程的虚拟地址空间，从而实现对文件内容的直接读写或进程间共享内存
+- 虚拟内存映射：
+  - 操作系统将文件或内存区域划分为固定大小的页（通常为4KB）。
+  - 进程通过页表将虚拟地址映射到物理内存或文件中的具体位置。
+- 按需加载：
+  - 初始映射时仅建立虚拟地址与文件的关联，不实际加载数据到内存。
+  - 当进程访问某一页时，触发缺页中断，操作系统将文件内容加载到物理内存。
+- 共享机制：
+  - 多个进程可映射同一文件或匿名内存区域，共享同一物理内存页，实现高效数据共享。
+```c++
+void *mmap(
+    void *addr,     // 建议映射的起始地址（通常设为NULL，由内核自动分配）
+    size_t length,  // 映射区域的长度
+    int prot,       // 保护模式：PROT_READ（可读）、PROT_WRITE（可写）等
+    int flags,      // 映射标志：MAP_SHARED（共享映射）、MAP_PRIVATE（私有映射）、MAP_ANONYMOUS（匿名映射）
+    int fd,         // 文件描述符（匿名映射时设为-1）
+    off_t offset    // 文件偏移量（通常为0）
+);
+```
+
+```c++
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+
+int main() {
+    int fd = open("data.txt", O_RDWR | O_CREAT, 0666);
+    ftruncate(fd, 4096);  // 调整文件大小
+    char *ptr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    sprintf(ptr, "Hello, mmap!");  // 直接写入内存
+    munmap(ptr, 4096);
+    close(fd);
+    return 0;
+}
+```

@@ -324,3 +324,35 @@ int main(int argc, char * argv[])
 ```
 
 ---
+
+## 八. 目录操作核心函数
+
+### 1. `opendir()` 打开目录
+- 打开一个目录，返回指向目录流的指针（`DIR` 类型）
+```c
+#include <dirent.h>
+DIR *opendir(const char *name);
+
+/*
+参数
+    name 为目录路径（如 "." 表示当前目录）。
+返回值
+    成功：返回 DIR 指针（目录流句柄）。
+    失败：返回 NULL，并设置 errno。
+*/
+```
+
+### 2. `readdir()` 读取目录项
+- 从目录流中读取一个目录项（即目录中的一个文件或子目录）。
+```c
+#include <dirent.h>
+struct dirent *readdir(DIR *dirp);
+
+/*
+参数
+    dirp 为 opendir() 返回的目录流指针。
+返回值
+    成功：返回指向 struct dirent 的指针（存储目录项信息）。
+    失败或到达目录末尾：返回 NULL（需用 errno 区分错误）。
+*/
+```

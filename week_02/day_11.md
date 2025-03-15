@@ -153,7 +153,7 @@ struct stat {
 };
 ```
 
-文件类型判断宏和权限位检查宏
+- 文件类型判断宏和权限位检查宏
 ```c
 S_ISREG(st_mode)   // 普通文件
 S_ISDIR(st_mode)   // 目录
@@ -383,7 +383,7 @@ void rewinddir(DIR *dirp);
 ### 5. 目录相关结构体
 
 #### `struct dirent` 目录项信息
-存储单个目录项的信息（不同系统可能扩展字段，但以下字段是通用的）
+- 存储单个目录项的信息（不同系统可能扩展字段，但以下字段是通用的）
 ```c
 #include <dirent.h>
 struct dirent {

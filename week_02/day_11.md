@@ -483,3 +483,50 @@ int getFileNum(const char * path)
 - 实现类似 `ls` 的目录列表功能。递归遍历文件树（如统计文件数量、搜索文件）。
 
 ---
+
+## 九. 文件重定向
+### 1. `dup()` 复制文件描述符
+- 复制一个已有的文件描述符，生成一个新的描述符指向同一个文件/资源。
+- 新描述符是当前可用的最小未使用值。
+
+```c
+#include <unistd.h>
+int dup(int oldfd);
+
+int fd = open("file.txt", O_WRONLY | O_CREAT, 0644);
+int new_fd = dup(fd); // new_fd 是系统分配的最小可用 FD
+
+write(new_fd, "Hello", 5); // 写入 file.txt
+close(fd);
+close(new_fd);
+
+/*
+参数
+    oldfd：需要复制的原文件描述符。
+返回值
+   成功：返回新的文件描述符。
+   失败：返回 -1，并设置 errno。
+*/
+```
+
+### 2. `dup2()` 指定新描述符的复制
+
+- 将 `oldfd` 复制到指定的 `newfd`，若 `newfd` 已打开，则先关闭它。
+```c
+#include <unistd.h>
+int dup2(int oldfd, int newfd);
+
+int fd = open("output.txt", O_WRONLY | O_CREAT, 0644);
+dup2(fd, STDOUT_FILENO); // STDOUT_FILENO 是 1
+close(fd); // 关闭原 fd，因为 STDOUT_FILENO 已指向文件
+
+/*
+参数
+    oldfd：原文件描述符。
+    newfd：目标文件描述符（需为有效值，通常为 0 <= newfd < OPEN_MAX）。
+返回值
+    成功：返回 newfd。
+    失败：返回 -1，并设置 errno。
+*/
+```
+

@@ -14,3 +14,4 @@
 - [`day_10` Socket 网络编程](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_10.md) ✅
 - [`day_11` Unix 文件](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_11.md) ✅
 - [`day_12` POSIX 线程](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_12.md) ✅
+- [`day_13` 同步机制](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_13.md) ✅

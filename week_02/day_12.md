@@ -136,3 +136,75 @@ int main()
 ```
 
 ---
+
+六. `pthread_cancel` 请求终止目标线程
+
+- 向目标线程发送取消请求，目标线程需在取消点（`cancellation point`）响应请求。
+- 线程可设置取消状态（`enabled/disabled`）和取消类型（`deferred/asynchronous`）
+- 强制终止长时间运行或阻塞的线程（如死循环、等待`I/O`）。
+- 需配合线程的取消处理清理函数（`cleanup handlers`）使用，避免资源泄漏。
+
+```c
+int pthread_cancel(pthread_t thread);
+
+#include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>
+
+void cleanup(void* arg)
+{
+    printf("Cleaning up resources: %s\n", (char*)arg);
+}
+
+void* thread_func(void* arg)
+{
+    pthread_cleanup_push(cleanup, "Releasing lock"); // Register cleanup function
+    while (1) {
+        pthread_testcancel(); // Manually insert cancellation point
+        printf("Thread is running...\n");
+        sleep(1);
+    }
+    pthread_cleanup_pop(0); // 0 means do not execute cleanup function (only on cancellation)
+    return NULL;
+}
+
+int main()
+{
+    pthread_t tid;
+    pthread_create(&tid, NULL, thread_func, NULL);
+    sleep(3); // Wait for 3 seconds before canceling the thread
+    pthread_cancel(tid); // Send cancellation request
+    pthread_join(tid, NULL); // Wait for the thread to terminate
+    printf("Thread has been terminated\n");
+    return 0;
+}
+```
+
+---
+
+## 七. 总结
+
+### `pthread_exit vs pthread_cancel`
+
+| 特性               | `pthread_exit`                          | `pthread_cancel`                     |
+|--------------------|----------------------------------------|---------------------------------------|
+| **调用者**         | 线程自身                               | 其他线程                              |
+| **控制权**         | 完全由线程自身控制                     | 依赖目标线程的取消点和状态设置        |
+| **资源清理**       | 需在线程函数中手动处理                 | 需通过清理函数（`pthread_cleanup_*`） |
+| **适用场景**       | 主动退出                               | 强制终止失控线程                      |
+| **风险**           | 返回值需正确处理                       | 可能导致资源泄漏或数据不一致          |
+
+### 线程状态管理函数
+| 函数                     | 作用                                                         |
+|--------------------------|-------------------------------------------------------------|
+| `pthread_join`           | 等待线程终止并回收资源。                                     |
+| `pthread_detach`         | 分离线程，使其终止后自动回收资源。                           |
+| `pthread_setcancelstate` | 启用/禁用线程取消功能。                                      |
+| `pthread_setcanceltype`  | 设置取消类型（延迟或异步）。                                 |
+
+```c
+pthread_t pthread_self(void);                   // 返回当前线程的线程 ID
+int pthread_equal(pthread_t t1, pthread_t t2);  // 比较两个线程 ID 是否相等
+```
+
+---

@@ -174,3 +174,57 @@ struct timeval {
 ```
 
 ---
+
+## 四. 信号屏蔽与阻塞函数
+通过设置信号屏蔽字（`Signal Mask`），指定哪些信号在进程执行期间会被暂时阻塞（`Blocked`），即不会递送给进程处理。
+
+### 信号集（`Signal Set`）
+信号集用于表示一组信号，以下函数用于操作信号集：
+
+`int sigemptyset(sigset_t *set)`：清空信号集。
+`int sigfillset(sigset_t *set)`：填充所有信号到信号集。
+`int sigaddset(sigset_t *set, int signum)`：添加指定信号到信号集。
+`int sigdelset(sigset_t *set, int signum)`：从信号集中移除指定信号。
+`int sigismember(const sigset_t *set, int signum)`：检查信号是否在集合中。
+
+
+### `sigprocmask()` 用于设置或修改进程的信号屏蔽字
+
+```c
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+/*
+参数：
+how：操作类型，可选值：
+SIG_BLOCK：将 set 中的信号添加到当前屏蔽字。
+SIG_UNBLOCK：从当前屏蔽字中移除 set 中的信号。
+SIG_SETMASK：直接将当前屏蔽字设置为 set。
+set：新的信号集。
+oldset：保存旧的信号屏蔽字（可为 NULL）。
+*/
+
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+
+int main() {
+    sigset_t new_mask, old_mask;
+
+    // 初始化信号集
+    sigemptyset(&new_mask);
+    sigaddset(&new_mask, SIGINT);  // 添加 SIGINT 到屏蔽集
+
+    // 屏蔽 SIGINT 信号
+    sigprocmask(SIG_BLOCK, &new_mask, &old_mask);
+
+    printf("SIGINT 已被屏蔽，按下 Ctrl+C 不会终止进程...\n");
+    sleep(5);  // 模拟关键代码执行
+
+    // 恢复原来的信号屏蔽字
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    printf("SIGINT 已解除屏蔽，按下 Ctrl+C 可终止进程。\n");
+
+    while(1) pause();  // 等待信号
+    return 0;
+}
+```
+---

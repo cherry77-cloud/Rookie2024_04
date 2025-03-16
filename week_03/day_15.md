@@ -227,4 +227,44 @@ int main() {
     return 0;
 }
 ```
+
+### 3. `sigpending()` 用于获取当前被阻塞且未处理的信号
+```c
+#include <signal.h>
+int sigpending(sigset_t *set);
+// set： 一个指向 sigset_t 类型的指针，用于存储当前被阻塞且未处理的信号集。
+// 如果成功调用，set 会被填充为当前未处理的信号集。
+
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+
+int main() {
+    sigset_t new_mask, old_mask, pending_mask;
+    sigemptyset(&new_mask);
+    sigaddset(&new_mask, SIGINT);  // Add SIGINT to the signal set
+
+    sigprocmask(SIG_BLOCK, &new_mask, &old_mask);
+
+    printf("SIGINT is blocked. Pressing Ctrl+C will not terminate the process...\n");
+    sleep(5);  // Simulate critical code execution
+
+    if (sigpending(&pending_mask) == -1) {
+        perror("sigpending");
+        return 1;
+    }
+
+    if (sigismember(&pending_mask, SIGINT)) {
+        printf("SIGINT is blocked and pending.\n");
+    } else {
+        printf("No pending SIGINT signals.\n");
+    }
+
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    printf("SIGINT is unblocked. Pressing Ctrl+C will terminate the process.\n");
+
+    while(1) pause();  // Wait for signals
+    return 0;
+}
+```
 ---

@@ -178,7 +178,7 @@ struct timeval {
 ## 四. 信号屏蔽与阻塞函数
 通过设置信号屏蔽字（`Signal Mask`），指定哪些信号在进程执行期间会被暂时阻塞（`Blocked`），即不会递送给进程处理。
 
-### 信号集（`Signal Set`）
+### 1. 信号集（`Signal Set`）
 信号集用于表示一组信号，以下函数用于操作信号集：
 
 - `int sigemptyset(sigset_t *set)`：清空信号集。
@@ -188,18 +188,18 @@ struct timeval {
 - `int sigismember(const sigset_t *set, int signum)`：检查信号是否在集合中。
 
 
-### `sigprocmask()` 用于设置或修改进程的信号屏蔽字
+### 2. `sigprocmask()` 用于设置或修改进程的信号屏蔽字
 
 ```c
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
 /*
 参数：
-how：操作类型，可选值：
-SIG_BLOCK：将 set 中的信号添加到当前屏蔽字。
-SIG_UNBLOCK：从当前屏蔽字中移除 set 中的信号。
-SIG_SETMASK：直接将当前屏蔽字设置为 set。
-set：新的信号集。
-oldset：保存旧的信号屏蔽字（可为 NULL）。
+    how：操作类型，可选值：
+    SIG_BLOCK：将 set 中的信号添加到当前屏蔽字。
+    SIG_UNBLOCK：从当前屏蔽字中移除 set 中的信号。
+    SIG_SETMASK：直接将当前屏蔽字设置为 set。
+    set：新的信号集。
+    oldset：保存旧的信号屏蔽字（可为 NULL）。
 */
 
 #include <stdio.h>

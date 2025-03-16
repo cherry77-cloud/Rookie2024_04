@@ -181,11 +181,11 @@ struct timeval {
 ### 信号集（`Signal Set`）
 信号集用于表示一组信号，以下函数用于操作信号集：
 
-`int sigemptyset(sigset_t *set)`：清空信号集。
-`int sigfillset(sigset_t *set)`：填充所有信号到信号集。
-`int sigaddset(sigset_t *set, int signum)`：添加指定信号到信号集。
-`int sigdelset(sigset_t *set, int signum)`：从信号集中移除指定信号。
-`int sigismember(const sigset_t *set, int signum)`：检查信号是否在集合中。
+- `int sigemptyset(sigset_t *set)`：清空信号集。
+- `int sigfillset(sigset_t *set)`：填充所有信号到信号集。
+- `int sigaddset(sigset_t *set, int signum)`：添加指定信号到信号集。
+- `int sigdelset(sigset_t *set, int signum)`：从信号集中移除指定信号。
+- `int sigismember(const sigset_t *set, int signum)`：检查信号是否在集合中。
 
 
 ### `sigprocmask()` 用于设置或修改进程的信号屏蔽字

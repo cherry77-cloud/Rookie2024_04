@@ -19,3 +19,12 @@
 | `SIGSTOP`      | 19           | 强制暂停进程（**不可捕获或忽略**，如 `kill -STOP <PID>`）                  | 暂停进程                 |
 | `SIGCONT`      | 18           | 恢复已暂停的进程（如通过 `kill -CONT <PID>`）                              | 继续进程                 |
 |`SIGURG`        | 23	        |紧急数据到达套接字（如TCP带外数据）	                                          |忽略 | 
+
+- 常见默认行为：
+  - 终止进程（`Terminate`）：如 `SIGINT（Ctrl+C）`、`SIGTERM`。
+  - 终止并生成核心转储（`Terminate with Core Dump`）：如 `SIGSEGV`（段错误）、`SIGABRT`。
+  - 忽略（`Ignore`）：如 `SIGCHLD`（子进程状态改变）。
+  - 暂停进程（`Stop`）：如 `SIGSTOP、SIGTSTP（Ctrl+Z）`。
+  - 继续进程（`Continue`）：如 `SIGCONT`。
+
+---

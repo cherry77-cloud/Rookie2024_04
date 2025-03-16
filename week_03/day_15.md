@@ -29,7 +29,8 @@
 
 ---
 
-##  二. `signal()` 注册信号处理函数
+## 二. 信号处理函数
+### 1. `signal()` 注册信号处理函数
 - 为指定信号绑定自定义处理函数
 ```c
 void (*signal(int signum, void (*handler)(int)))(int);
@@ -50,7 +51,7 @@ handler：处理函数指针，或 SIG_IGN（忽略信号）、SIG_DFL（恢复�
 */
 ```
 
-## 三. `sigaction()` 高级信号处理
+### 2. `sigaction()` 高级信号处理
 - 提供更精细的信号控制（如屏蔽信号、设置标志）
 
 ```c
@@ -77,3 +78,4 @@ int main() {
     return 0;
 }
 ```
+---

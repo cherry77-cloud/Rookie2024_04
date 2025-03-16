@@ -92,4 +92,75 @@ kill(1234, SIGTERM);  // 向 PID 1234 发送终止信号
 // pid > 0：发送给指定进程。
 // pid = 0：发送给同进程组的所有进程。
 // pid = -1：发送给所有有权发送的进程。
+// pid < -1：发送给进程组ID为 |pid| 的所有进程
 ```
+
+### 2. `raise()` 向当前进程发送信号
+- 向当前进程发送信号（等价于 `kill(getpid(), sig)`）。
+```c
+#include <signal.h>
+int raise(int sig);
+
+/*
+参数：
+    sig：信号编号（如 SIGINT）。
+返回值：
+    成功返回 0，失败返回非零值。
+*/
+```
+
+### 3. `sigqueue()` 发送实时信号并携带数据
+- 发送实时信号（`SIGRTMIN` 至 `SIGRTMAX`），可附加用户数据。
+```c
+#include <signal.h>
+int sigqueue(pid_t pid, int sig, const union sigval value);
+
+union sigval {
+    int   sival_int;    // 传递整型数据
+    void *sival_ptr;    // 传递指针
+};
+
+参数：
+    - pid：目标进程ID。
+    - sig：实时信号编号（如 SIGRTMIN+1）。
+    - value：附加数据（联合体 union sigval）。
+```
+
+### 4. `alarm()` 设置定时发送`SIGALRM`信号
+- 功能：设置定时器，超时后向当前进程发送 `SIGALRM` 信号。
+```c
+#include <unistd.h>
+unsigned int alarm(unsigned int seconds);
+/*
+参数：
+    seconds：定时时长（秒）。
+返回值：
+    返回剩余未触发的定时时间（若之前有定时器未触发）。
+*/
+```
+
+### 5. `setitimer()` 高精度定时发送 `SIGALRM`
+- 提供更精细的定时器控制（支持微秒级精度），可周期触发 `SIGALRM`。
+```c
+#include <sys/time.h>
+int setitimer(int which, const struct itimerval *new_val, struct itimerval *old_val);
+
+struct itimerval {
+    struct timeval it_interval;  // 周期时间
+    struct timeval it_value;     // 初始触发时间
+};
+struct timeval {
+    time_t      tv_sec;         // 秒
+    suseconds_t tv_usec;        // 微秒
+};
+
+/*
+参数：
+    which：定时器类型：
+    ITIMER_REAL：真实时间（触发 SIGALRM）。
+    ITIMER_VIRTUAL：进程用户态CPU时间（触发 SIGVTALRM）。
+    ITIMER_PROF：进程用户态+内核态CPU时间（触发 SIGPROF）。
+*/
+```
+
+---

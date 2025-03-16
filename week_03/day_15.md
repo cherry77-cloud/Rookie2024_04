@@ -28,3 +28,52 @@
   - 继续进程（`Continue`）：如 `SIGCONT`。
 
 ---
+
+##  二. `signal()` 注册信号处理函数
+- 为指定信号绑定自定义处理函数
+```c
+void (*signal(int signum, void (*handler)(int)))(int);
+
+void handler(int sig) {
+    printf("Received signal: %d\n", sig);
+}
+
+int main() {
+    signal(SIGINT, handler);  // 捕获 Ctrl+C
+    while(1) pause();          // 等待信号
+    return 0;
+}
+
+/*
+signum：信号编号（如 SIGINT）。
+handler：处理函数指针，或 SIG_IGN（忽略信号）、SIG_DFL（恢复默认行为）。
+*/
+```
+
+## 三. `sigaction()` 高级信号处理
+- 提供更精细的信号控制（如屏蔽信号、设置标志）
+
+```c
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+
+struct sigaction {
+    void     (*sa_handler)(int);                          // 简单处理函数
+    void     (*sa_sigaction)(int, siginfo_t *, void *);   // 携带附加数据的处理函数
+    sigset_t sa_mask;                                     // 阻塞的信号集
+    int      sa_flags;                                    // 标志（如 SA_SIGINFO、SA_RESTART）
+};
+
+void handler(int sig, siginfo_t *info, void *context) {
+    printf("Received signal %d from PID %d\n", sig, info->si_pid);
+}
+
+int main() {
+    struct sigaction sa;
+    sa.sa_sigaction = handler;
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    while(1) pause();
+    return 0;
+}
+```

@@ -12,4 +12,3 @@
 - [`day_09` CMake 下](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_09.md) ✅
 - [`day_12` POSIX 线程](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_12.md) ✅
 - [`day_13` 同步机制](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_13.md) ✅
-- [`day_14` 进程间通信 IPC](https://github.com/cherry77-cloud/Rookie2024_07/blob/main/week_02/day_14.md) ✅
